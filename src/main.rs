@@ -1,5 +1,42 @@
 use plotters::prelude::*;
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+
+type JobVec = Vec<Job>;
+
+struct Job {
+    frames: i32,
+}
+struct Farm {
+    jobs: JobVec,
+    slaves: i32,
+}
+
+struct Sim {
+    farms: Vec<Farm>,
+}
+
+impl Job {
+    fn new() -> Self {
+        Self { frames: 100 }
+    }
+}
+
+impl Farm {
+    fn new() -> Self {
+        Self { jobs: Vec::new(), slaves: 10 }
+    }
+}
+
+impl Sim {
+    fn new() -> Self {
+        Self { farms: Vec::new() }
+    }
+}
+
+fn main() {
+    plot().unwrap();
+}
+
+fn plot() -> Result<(), Box<dyn std::error::Error>> {
     let root = BitMapBackend::new("plotters-doc-data/0.png", (1280, 720)).into_drawing_area();
     root.fill(&WHITE)?;
     let mut chart = ChartBuilder::on(&root)
