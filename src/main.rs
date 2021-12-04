@@ -18,6 +18,10 @@ impl Job {
     fn new() -> Self {
         Self { frames: 10 }
     }
+
+    fn render(&mut self) {
+        self.frames -= 1;
+    }
 }
 
 impl Farm {
@@ -27,6 +31,14 @@ impl Farm {
 
     fn submit(&mut self, job: Job) {
         self.jobs.push(job);
+    }
+
+    fn render(&mut self) {
+        for job in self.jobs.iter_mut() {
+            job.render();
+        }
+
+        self.jobs.retain(|x| x.frames > 0);
     }
 }
 
