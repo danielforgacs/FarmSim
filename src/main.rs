@@ -16,7 +16,7 @@ struct Sim {
 
 impl Job {
     fn new() -> Self {
-        Self { frames: 100 }
+        Self { frames: 10 }
     }
 }
 
@@ -24,11 +24,19 @@ impl Farm {
     fn new() -> Self {
         Self { jobs: Vec::new(), slaves: 10 }
     }
+
+    fn submit(&mut self, job: Job) {
+        self.jobs.push(job);
+    }
 }
 
 impl Sim {
     fn new() -> Self {
         Self { farms: Vec::new() }
+    }
+
+    fn add_farm(&mut self, farm: Farm) {
+        self.farms.push(farm);
     }
 }
 
@@ -48,6 +56,13 @@ fn plot() -> Result<(), Box<dyn std::error::Error>> {
     chart
         .configure_mesh()
         .draw()?;
+
+    // =====================================================
+    let job = Job::new();
+    let mut farm = Farm::new();
+    farm.submit(job);
+    let mut sim = Sim::new();
+    sim.add_farm(farm);
 
     for i in 0..=5 {
         chart
