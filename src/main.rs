@@ -12,11 +12,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .configure_mesh()
         .draw()?;
 
-    chart
-        .draw_series(LineSeries::new(
-            (0..=250).map(|x| x as f32).map(|x| (x, x )),
-            &GREEN,
-        ))?;
+    for i in 0..=5 {
+        chart
+            .draw_series(LineSeries::new(
+                (0..=250).map(|x| x as f32).map(|x| (x + (i as f32), x )),
+                &GREEN,
+            ))?;
+    }
 
     Ok(())
 }
