@@ -76,6 +76,10 @@ fn plot() -> Result<(), Box<dyn std::error::Error>> {
     let mut sim = Sim::new();
     sim.add_farm(farm);
 
+    for farm in sim.farms {
+        println!("Job count: {}", farm.jobs.len());
+    }
+
     for i in 0..=5 {
         chart
             .draw_series(LineSeries::new(
