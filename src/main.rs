@@ -17,6 +17,7 @@ impl Job {
 
     fn render(&mut self) {
         if !self.get_done() {
+            println!("{:<22}{:p}", "rendering job:", self);
             self.frames -= 1;
         }
         if self.frames == 0 {
@@ -42,6 +43,7 @@ impl Farm {
         for job in self.jobs.iter_mut() {
             job.render();
         }
+        self.jobs.retain(|x| !x.get_done());
     }
 }
 
@@ -50,7 +52,8 @@ fn main() {
     let mut farm = Farm::new();
     farm.submit(job);
     for cycle in 0..=11 {
-        println!("cycle: {}", cycle);
+        println!("--- cycle: {} -------------------", cycle);
+        println!("{:<22}{}", "job count:", &farm.jobs.len());
         farm.render();
     }
 }
