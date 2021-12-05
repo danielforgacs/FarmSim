@@ -1,1 +1,4 @@
-target/
+# Added by cargo
+
+/target
+/plotters-doc-data
