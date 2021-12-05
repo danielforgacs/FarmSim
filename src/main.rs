@@ -99,7 +99,7 @@ impl Farm {
             )
             .as_str();
         self.free_cpus = self.cpus;
-        println!("{}", log);
+        // println!("{}", log);
         usage
     }
 }
@@ -138,19 +138,19 @@ fn main() {
         println!("Good job count: 1 - 1000.");
         return;
     }
-    if config.min_frames < 1 || config.max_frames > 1000 || config.max_frames < config.min_frames {
+    if config.min_frames < 1 || config.max_frames > 4800 || config.max_frames < config.min_frames {
         println!("Config frame range: {} - {}.", config.min_frames, config.max_frames);
-        println!("Good frame range: 1 - 1000.");
+        println!("Good frame range: 1 - 4800.");
         return;
     }
-    if config.min_chunk_size < 1 || config.max_chunk_size > 1000 || config.max_chunk_size < config.min_chunk_size {
+    if config.min_chunk_size < 1 || config.max_chunk_size > 4800 || config.max_chunk_size < config.min_chunk_size {
         println!("config chunk size range: {} - {}", config.min_chunk_size, config.max_chunk_size);
-        println!("Good chunk size range:   1 - 1000.");
+        println!("Good chunk size range:   1 - 4800.");
         return;
     }
-    if config.max_cycles < 1 || config.max_cycles > 10000 {
+    if config.max_cycles < 1 || config.max_cycles > 1600 {
         println!("config cycles: {}", config.max_cycles);
-        println!("Good cycles range:   1 - 10000.");
+        println!("Good cycles range:   1 - 1600.");
         return;
     }
     sim(&config);
@@ -158,7 +158,7 @@ fn main() {
 
 fn sim(config: &Config) {
     let mut rng = thread_rng();
-    let root = BitMapBackend::new("farm_usage_plot.png", (1280, 720))
+    let root = BitMapBackend::new("farm_usage_plot.png", (1600, 900))
         .into_drawing_area();
     root.fill(&WHITE)
         .expect("can't fill the image.");
@@ -170,7 +170,8 @@ fn sim(config: &Config) {
     chart.configure_mesh()
         .draw().expect("chart draw failed.");
 
-    for _ in 0..=config.repetitions {
+    for rep in 0..config.repetitions {
+        println!("rep: {}", rep);
         let mut farm = Farm::new(config.cpus);
 
         for id in 0..config.job_count {
@@ -190,7 +191,7 @@ fn sim(config: &Config) {
         let mut finished = false;
 
         for cycle in 0..=config.max_cycles {
-            println!("--- cycle: {} -------------------", cycle);
+            // println!("--- cycle: {} -------------------", cycle);
             let usage = farm.render();
             usage_seq.push(usage);
             if finished {
