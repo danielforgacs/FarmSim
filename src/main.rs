@@ -3,10 +3,10 @@ use serde::{Serialize, Deserialize};
 use plotters::prelude::*;
 
 struct Job {
-    id: i32,
+    // id: i32,
     frames: i32,
-    total_frames: i32,
-    chunk_size: i32,
+    // total_frames: i32,
+    // chunk_size: i32,
     task_count: i32,
 }
 
@@ -28,16 +28,16 @@ struct Config {
     max_chunk_size: i32,
 }
 impl Job {
-    fn new(id: i32, frames: i32, chunk_size: i32) -> Self {
+    fn new(frames: i32, chunk_size: i32) -> Self {
         let mut tasks = frames / chunk_size;
         if frames % chunk_size > 0 {
             tasks += 1;
         }
         Self {
-            id,
+            // id,
             frames,
-            total_frames: frames,
-            chunk_size,
+            // total_frames: frames,
+            // chunk_size,
             task_count: tasks,
         }
     }
@@ -186,7 +186,7 @@ fn sim(config: &Config) {
         print!("rep: {}", rep);
         let mut farm = Farm::new(config.cpus);
 
-        for id in 0..config.job_count {
+        for _ in 0..config.job_count {
             let mut frames = config.min_frames;
             if config.max_frames != frames {
                 frames = rng.gen_range(config.min_frames..=config.max_frames);
@@ -195,14 +195,14 @@ fn sim(config: &Config) {
             if config.min_chunk_size < config.max_chunk_size {
                 chunk_size = rng.gen_range(config.min_chunk_size..=config.max_chunk_size);
             }
-            let job = Job::new(id, frames, chunk_size);
+            let job = Job::new(frames, chunk_size);
             farm.submit(job);
         }
 
         let mut usage_seq: Vec<f32> = Vec::new();
         let mut finished = false;
 
-        for cycle in 0..=config.max_cycles {
+        for _ in 0..=config.max_cycles {
             // println!("--- cycle: {} -------------------", cycle);
             let usage = farm.render();
             usage_seq.push(usage);
