@@ -26,6 +26,8 @@ struct Config {
     max_frames: i32,
     min_chunk_size: i32,
     max_chunk_size: i32,
+    min_frame_cycles: i32,
+    max_frame_cycles: i32,
 }
 impl Job {
     fn new(frames: i32, chunk_size: i32) -> Self {
@@ -112,13 +114,15 @@ Writing default \"farmsimconf.json\" config file."
         );
         let config = Self {
             repetitions: 1,
-            max_cycles: 1,
+            max_cycles: 1600,
             cpus: 1,
             job_count: 1,
-            min_frames: 1,
-            max_frames: 1,
-            min_chunk_size: 1,
-            max_chunk_size: 1,
+            min_frames: 250,
+            max_frames: 250,
+            min_chunk_size: 1000,
+            max_chunk_size: 1000,
+            min_frame_cycles: 1,
+            max_frame_cycles: 1,
         };
         let json: String = serde_json::to_string(&config).expect("Can't serialize default config.");
         std::fs::write("farmsimconf.json", json).expect("Can't write default json config.");
@@ -153,6 +157,11 @@ fn main() {
         println!("Good cycles range:   1 - 1600.");
         return;
     }
+    if config.min_frame_cycles < 1 || config.max_frame_cycles > 100 || config.max_frame_cycles < config.min_frame_cycles {
+        println!("frame cycles: {} - {}", config.min_frame_cycles, config.max_frame_cycles);
+        println!("Good cycles range:   1 - 100.");
+        return;
+    }
     sim(&config);
 }
 
@@ -173,6 +182,8 @@ fn sim(config: &Config) {
     root.draw(&Text::new(format!("max_frames: {}", config.max_frames), (text_x, text_y + (5 * y_diff)), ("Arial", 20).into_font())).unwrap();
     root.draw(&Text::new(format!("min_chunk_size: {}", config.min_chunk_size), (text_x, text_y + (6 * y_diff)), ("Arial", 20).into_font())).unwrap();
     root.draw(&Text::new(format!("max_chunk_size: {}", config.max_chunk_size), (text_x, text_y + (7 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("min_frame_cycles: {}", config.min_frame_cycles), (text_x, text_y + (8 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("max_frame_cycles: {}", config.max_frame_cycles), (text_x, text_y + (9 * y_diff)), ("Arial", 20).into_font())).unwrap();
 
     let mut chart = ChartBuilder::on(&root)
         .margin(5)
@@ -191,6 +202,7 @@ fn sim(config: &Config) {
             if config.max_frames != frames {
                 frames = rng.gen_range(config.min_frames..=config.max_frames);
             }
+            frames *= rng.gen_range(config.min_frame_cycles..=config.max_frame_cycles);
             let mut chunk_size = config.min_chunk_size;
             if config.min_chunk_size < config.max_chunk_size {
                 chunk_size = rng.gen_range(config.min_chunk_size..=config.max_chunk_size);
