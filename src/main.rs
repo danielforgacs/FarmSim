@@ -17,7 +17,9 @@ struct Farm {
 
 #[derive(Serialize, Deserialize)]
 struct Config {
+    job_count: i32,
     min_frames: i32,
+    max_frames: i32,
 }
 impl Job {
     fn new(id: i32, frames: i32, chunk_size: i32) -> Self {
@@ -82,7 +84,15 @@ impl Farm {
 
 impl Config {
     fn new() -> Self {
-        let config = Self { min_frames: 1 };
+        println!(
+"Missing config file or error in the json data.
+Writing default \"farmsimconf.json\" config file."
+        );
+        let config = Self {
+            job_count: 1,
+            min_frames: 1,
+            max_frames: 1,
+        };
         let json: String = serde_json::to_string(&config).expect("Can't serialize default config.");
         std::fs::write("farmsimconf.json", json).expect("Can't write default json config.");
         config
@@ -96,17 +106,19 @@ fn main() {
         },
         Err(_) => Config::new(),
     };
-    println!("{}", config.min_frames);
+    sim(&config);
 }
 
-fn sim() {
+fn sim(config: &Config) {
     let mut rng = thread_rng();
-    let job_count = 1;
     let mut farm = Farm::new(4);
 
-    for id in 0..=job_count {
-        let frames = rng.gen_range(1..10);
-        let chunk_size = rng.gen_range(1..frames);
+    for id in 0..config.job_count {
+        let mut frames = config.min_frames;
+        if config.max_frames != frames {
+            frames = rng.gen_range(config.min_frames..=config.max_frames);
+        }
+        let chunk_size = frames;
         let job = Job::new(id, frames, chunk_size);
         farm.submit(job);
 
