@@ -57,7 +57,14 @@ impl Farm {
                 }
                 self.free_cpus -= 1;
                 job.render();
-                println!("job id: {}, frames: {}, chunk size: {}, tasks: {}, frames left: {}", job.id, job.total_frames, job.chunk_size, job.task_count, job.frames);
+                println!(
+                    "job id: {}, frames: {}, chunk size: {}, tasks: {}, frames left: {}",
+                    job.id,
+                    job.total_frames,
+                    job.chunk_size,
+                    job.task_count,
+                    job.frames,
+                );
                 if job.frames == 0 {
                     break;
                 }
@@ -72,6 +79,7 @@ fn main() {
     let mut rng = thread_rng();
     let job_count = 1;
     let mut farm = Farm::new(4);
+
     for id in 0..=job_count {
         let frames = rng.gen_range(1..10);
         let chunk_size = rng.gen_range(1..frames);
@@ -79,10 +87,7 @@ fn main() {
         farm.submit(job);
 
     }
-    // let job1 = Job::new(0, 4, 2);
-    // let job2 = Job::new(1, 4, 2);
-    // farm.submit(job1);
-    // farm.submit(job2);
+
     for cycle in 0..=11 {
         println!("--- cycle: {} -------------------", cycle);
         println!(
