@@ -17,6 +17,8 @@ struct Farm {
 
 #[derive(Serialize, Deserialize)]
 struct Config {
+    max_cycles: i32,
+    cpus: i32,
     job_count: i32,
     min_frames: i32,
     max_frames: i32,
@@ -91,6 +93,8 @@ impl Config {
 Writing default \"farmsimconf.json\" config file."
         );
         let config = Self {
+            max_cycles: 1,
+            cpus: 1,
             job_count: 1,
             min_frames: 1,
             max_frames: 1,
@@ -125,12 +129,17 @@ fn main() {
         println!("Good chunk size range:   1 - 1000.");
         return;
     }
+    if config.max_cycles < 1 || config.max_cycles > 10000 {
+        println!("config cycles: {}", config.max_cycles);
+        println!("Good cycles range:   1 - 10000.");
+        return;
+    }
     sim(&config);
 }
 
 fn sim(config: &Config) {
     let mut rng = thread_rng();
-    let mut farm = Farm::new(4);
+    let mut farm = Farm::new(config.cpus);
 
     for id in 0..config.job_count {
         let mut frames = config.min_frames;
@@ -146,7 +155,7 @@ fn sim(config: &Config) {
 
     }
 
-    for cycle in 0..=11 {
+    for cycle in 0..=config.max_cycles {
         println!("--- cycle: {} -------------------", cycle);
         println!(
             "job count: {}",
