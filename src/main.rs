@@ -31,6 +31,7 @@ struct Config {
     min_startup_cycles: i32,
     max_startup_cycles: i32,
 }
+
 impl Job {
     fn new(mut frames: i32, chunk_size: i32, startup_cycles: i32) -> Self {
         let mut tasks = frames / chunk_size;
@@ -117,24 +118,25 @@ impl Config {
 Writing default \"farmsimconf.json\" config file."
         );
         let config = Self {
-            repetitions: 1,
+            repetitions: 10,
             max_cycles: 1600,
-            cpus: 10,
-            job_count: 10,
-            min_frames: 250,
-            max_frames: 250,
-            min_chunk_size: 1000,
-            max_chunk_size: 1000,
+            cpus: 100,
+            job_count: 100,
+            min_frames: 500,
+            max_frames: 500,
+            min_chunk_size: 1,
+            max_chunk_size: 1,
             min_frame_cycles: 1,
             max_frame_cycles: 1,
-            min_startup_cycles: 0,
-            max_startup_cycles: 0,
+            min_startup_cycles: 1,
+            max_startup_cycles: 1,
         };
         let json: String = serde_json::to_string(&config).expect("Can't serialize default config.");
         std::fs::write("farmsimconf.json", json).expect("Can't write default json config.");
         config
     }
 }
+
 fn main() {
     let config: Config = match std::fs::read_to_string("farmsimconf.json") {
         Ok(jsontext) => match serde_json::from_str(&jsontext) {
