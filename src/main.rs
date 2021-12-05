@@ -186,14 +186,10 @@ fn sim(config: &Config) {
     root.draw(&Text::new(format!("max_cycles: {}", config.max_cycles), (text_x, text_y + (1 * y_diff)), ("Arial", 20).into_font())).unwrap();
     root.draw(&Text::new(format!("cpus: {}", config.cpus), (text_x, text_y + (2 * y_diff)), ("Arial", 20).into_font())).unwrap();
     root.draw(&Text::new(format!("job_count: {}", config.job_count), (text_x, text_y + (3 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("min_frames: {}", config.min_frames), (text_x, text_y + (4 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("max_frames: {}", config.max_frames), (text_x, text_y + (5 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("min_chunk_size: {}", config.min_chunk_size), (text_x, text_y + (6 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("max_chunk_size: {}", config.max_chunk_size), (text_x, text_y + (7 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("min_frame_cycles: {}", config.min_frame_cycles), (text_x, text_y + (8 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("max_frame_cycles: {}", config.max_frame_cycles), (text_x, text_y + (9 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("min_startup_cycles: {}", config.min_startup_cycles), (text_x, text_y + (10 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("min_startup_cycles: {}", config.min_startup_cycles), (text_x, text_y + (11 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("frames: {} - {}", config.min_frames, config.max_frames), (text_x, text_y + (4 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("chunk_size: {} - {}", config.min_chunk_size, config.max_chunk_size), (text_x, text_y + (5 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("frame_cycles: {} - {}", config.min_frame_cycles, config.max_frame_cycles), (text_x, text_y + (6 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("min_startup_cycles: {} - {}", config.min_startup_cycles, config.max_startup_cycles), (text_x, text_y + (7 * y_diff)), ("Arial", 20).into_font())).unwrap();
 
     let mut chart = ChartBuilder::on(&root)
         .margin(5)
