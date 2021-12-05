@@ -162,5 +162,8 @@ fn sim(config: &Config) {
             &farm.jobs.len()
         );
         farm.render();
+        if farm.jobs.len() == 0 {
+            break;
+        }
     }
 }
