@@ -1,5 +1,6 @@
 use rand::prelude::*;
 use serde::{Serialize, Deserialize};
+use plotters::prelude::*;
 
 struct Job {
     id: i32,
@@ -17,6 +18,7 @@ struct Farm {
 
 #[derive(Serialize, Deserialize)]
 struct Config {
+    repetitions: i32,
     max_cycles: i32,
     cpus: i32,
     job_count: i32,
@@ -60,7 +62,7 @@ impl Farm {
         self.jobs.push(job);
     }
 
-    fn render(&mut self) {
+    fn render(&mut self) -> f32 {
         let mut log = String::new();
         'mainloop: for job in self.jobs.iter_mut() {
             for _ in 0..job.task_count {
@@ -98,6 +100,7 @@ impl Farm {
             .as_str();
         self.free_cpus = self.cpus;
         println!("{}", log);
+        usage
     }
 }
 
@@ -108,6 +111,7 @@ impl Config {
 Writing default \"farmsimconf.json\" config file."
         );
         let config = Self {
+            repetitions: 1,
             max_cycles: 1,
             cpus: 1,
             job_count: 1,
@@ -154,31 +158,51 @@ fn main() {
 
 fn sim(config: &Config) {
     let mut rng = thread_rng();
-    let mut farm = Farm::new(config.cpus);
+    let root = BitMapBackend::new("farm_usage_plot.png", (1280, 720))
+        .into_drawing_area();
+    root.fill(&WHITE)
+        .expect("can't fill the image.");
+    let mut chart = ChartBuilder::on(&root)
+        .margin(5)
+        .x_label_area_size(30)
+        .y_label_area_size(30)
+        .build_cartesian_2d(0_f32..config.max_cycles as f32, 0_f32..100_f32).expect("chart build failed.");
+    chart.configure_mesh()
+        .draw().expect("chart draw failed.");
 
-    for id in 0..config.job_count {
-        let mut frames = config.min_frames;
-        if config.max_frames != frames {
-            frames = rng.gen_range(config.min_frames..=config.max_frames);
-        }
-        let mut chunk_size = config.min_chunk_size;
-        if config.min_chunk_size < config.max_chunk_size {
-            chunk_size = rng.gen_range(config.min_chunk_size..=config.max_chunk_size);
-        }
-        let job = Job::new(id, frames, chunk_size);
-        farm.submit(job);
+    for _ in 0..=config.repetitions {
+        let mut farm = Farm::new(config.cpus);
 
-    }
+        for id in 0..config.job_count {
+            let mut frames = config.min_frames;
+            if config.max_frames != frames {
+                frames = rng.gen_range(config.min_frames..=config.max_frames);
+            }
+            let mut chunk_size = config.min_chunk_size;
+            if config.min_chunk_size < config.max_chunk_size {
+                chunk_size = rng.gen_range(config.min_chunk_size..=config.max_chunk_size);
+            }
+            let job = Job::new(id, frames, chunk_size);
+            farm.submit(job);
+        }
 
-    let mut finished = false;
-    for cycle in 0..=config.max_cycles {
-        println!("--- cycle: {} -------------------", cycle);
-        farm.render();
-        if finished {
-            break;
+        let mut usage_seq: Vec<f32> = Vec::new();
+        let mut finished = false;
+
+        for cycle in 0..=config.max_cycles {
+            println!("--- cycle: {} -------------------", cycle);
+            let usage = farm.render();
+            usage_seq.push(usage);
+            if finished {
+                break;
+            }
+            if farm.jobs.len() == 0 {
+                finished = true;
+            }
         }
-        if farm.jobs.len() == 0 {
-            finished = true;
-        }
+        chart.draw_series(LineSeries::new((
+            0..=usage_seq.len() - 1).map(|x| (x as f32, usage_seq[x] as f32)),
+        &BLACK,
+        )).expect("failed to draw chart");
     }
 }
