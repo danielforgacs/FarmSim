@@ -200,11 +200,14 @@ fn sim(config: &Config) {
         }
 
         let mut usage_seq: Vec<f32> = Vec::new();
+        let mut jobs_done: Vec<f32> = Vec::new();
         let mut finished = false;
 
         for _ in 0..=config.max_cycles {
             // println!("--- cycle: {} -------------------", cycle);
             let usage = farm.render();
+            let done_p = config.job_count as f32 / farm.jobs.len() as f32;
+            jobs_done.push(done_p);
             usage_seq.push(usage);
             if finished {
                 break;
@@ -217,6 +220,10 @@ fn sim(config: &Config) {
         chart.draw_series(LineSeries::new((
             0..=usage_seq.len() - 1).map(|x| (x as f32, usage_seq[x] as f32)),
         &BLACK,
+        )).expect("failed to draw chart");
+        chart.draw_series(LineSeries::new((
+            0..=usage_seq.len() - 1).map(|x| (x as f32, jobs_done[x] as f32)),
+        &GREEN,
         )).expect("failed to draw chart");
         println!(" - done.");
     }
