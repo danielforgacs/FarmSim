@@ -1,3 +1,6 @@
+use rand::prelude::*;
+use serde::{Serialize, Deserialize};
+
 struct Job {
     id: i32,
     frames: i32,
@@ -12,6 +15,16 @@ struct Farm {
     free_cpus: i32,
 }
 
+#[derive(Serialize, Deserialize)]
+struct Config {
+    max_cycles: i32,
+    cpus: i32,
+    job_count: i32,
+    min_frames: i32,
+    max_frames: i32,
+    min_chunk_size: i32,
+    max_chunk_size: i32,
+}
 impl Job {
     fn new(id: i32, frames: i32, chunk_size: i32) -> Self {
         let mut tasks = frames / chunk_size;
@@ -48,6 +61,7 @@ impl Farm {
     }
 
     fn render(&mut self) {
+        let mut log = String::new();
         'mainloop: for job in self.jobs.iter_mut() {
             for _ in 0..job.task_count {
                 if self.free_cpus == 0 {
@@ -55,29 +69,116 @@ impl Farm {
                 }
                 self.free_cpus -= 1;
                 job.render();
-                println!("job id: {}, frames: {}, chunk size: {}, tasks: {}, frames left: {}", job.id, job.total_frames, job.chunk_size, job.task_count, job.frames);
+                // println!(
+                //     "job id: {}, frames: {}, chunk size: {}, tasks: {}, frames left: {}",
+                //     job.id,
+                //     job.total_frames,
+                //     job.chunk_size,
+                //     job.task_count,
+                //     job.frames,
+                // );
                 if job.frames == 0 {
                     break;
                 }
             }
         }
         self.jobs.retain(|x| x.frames > 0);
+        let mut usage = 100f32;
+        let used = self.cpus - self.free_cpus;
+        if used != self.cpus {
+            usage = (used as f32 / self.cpus as f32) * 100f32;
+        }
+        log += format!(
+            "{:w1$}%, jobs: {:w2$}",
+            usage as u8,
+            self.jobs.len(),
+            w1=3,
+            w2=5,
+            )
+            .as_str();
         self.free_cpus = self.cpus;
+        println!("{}", log);
     }
 }
 
-fn main() {
-    let job1 = Job::new(0, 4, 2);
-    let job2 = Job::new(1, 4, 2);
-    let mut farm = Farm::new(4);
-    farm.submit(job1);
-    farm.submit(job2);
-    for cycle in 0..=11 {
-        println!("--- cycle: {} -------------------", cycle);
+impl Config {
+    fn new() -> Self {
         println!(
-            "job count: {}",
-            &farm.jobs.len()
+"Missing config file or error in the json data.
+Writing default \"farmsimconf.json\" config file."
         );
+        let config = Self {
+            max_cycles: 1,
+            cpus: 1,
+            job_count: 1,
+            min_frames: 1,
+            max_frames: 1,
+            min_chunk_size: 1,
+            max_chunk_size: 1,
+        };
+        let json: String = serde_json::to_string(&config).expect("Can't serialize default config.");
+        std::fs::write("farmsimconf.json", json).expect("Can't write default json config.");
+        config
+    }
+}
+fn main() {
+    let config: Config = match std::fs::read_to_string("farmsimconf.json") {
+        Ok(jsontext) => match serde_json::from_str(&jsontext) {
+            Ok(config) => config,
+            Err(_) => Config::new(),
+        },
+        Err(_) => Config::new(),
+    };
+    if config.job_count < 1 || config.job_count > 1000 {
+        println!("Config job count: {}", config.job_count);
+        println!("Good job count: 1 - 1000.");
+        return;
+    }
+    if config.min_frames < 1 || config.max_frames > 1000 || config.max_frames < config.min_frames {
+        println!("Config frame range: {} - {}.", config.min_frames, config.max_frames);
+        println!("Good frame range: 1 - 1000.");
+        return;
+    }
+    if config.min_chunk_size < 1 || config.max_chunk_size > 1000 || config.max_chunk_size < config.min_chunk_size {
+        println!("config chunk size range: {} - {}", config.min_chunk_size, config.max_chunk_size);
+        println!("Good chunk size range:   1 - 1000.");
+        return;
+    }
+    if config.max_cycles < 1 || config.max_cycles > 10000 {
+        println!("config cycles: {}", config.max_cycles);
+        println!("Good cycles range:   1 - 10000.");
+        return;
+    }
+    sim(&config);
+}
+
+fn sim(config: &Config) {
+    let mut rng = thread_rng();
+    let mut farm = Farm::new(config.cpus);
+
+    for id in 0..config.job_count {
+        let mut frames = config.min_frames;
+        if config.max_frames != frames {
+            frames = rng.gen_range(config.min_frames..=config.max_frames);
+        }
+        let mut chunk_size = config.min_chunk_size;
+        if config.min_chunk_size < config.max_chunk_size {
+            chunk_size = rng.gen_range(config.min_chunk_size..=config.max_chunk_size);
+        }
+        let job = Job::new(id, frames, chunk_size);
+        farm.submit(job);
+
+    }
+
+    let mut finished = false;
+    for cycle in 0..=config.max_cycles {
+        println!("--- cycle: {} -------------------", cycle);
         farm.render();
+        if finished {
+            break;
+        }
+        if farm.jobs.len() == 0 {
+            finished = true;
+        }
     }
 }
