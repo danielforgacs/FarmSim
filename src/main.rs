@@ -162,6 +162,18 @@ fn sim(config: &Config) {
         .into_drawing_area();
     root.fill(&WHITE)
         .expect("can't fill the image.");
+    let text_x = 50;
+    let text_y = 400;
+    let y_diff = 25;
+    root.draw(&Text::new(format!("repetitions: {}", config.repetitions), (text_x, text_y + (0 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("max_cycles: {}", config.max_cycles), (text_x, text_y + (1 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("cpus: {}", config.cpus), (text_x, text_y + (2 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("job_count: {}", config.job_count), (text_x, text_y + (3 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("min_frames: {}", config.min_frames), (text_x, text_y + (4 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("max_frames: {}", config.max_frames), (text_x, text_y + (5 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("min_chunk_size: {}", config.min_chunk_size), (text_x, text_y + (6 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("max_chunk_size: {}", config.max_chunk_size), (text_x, text_y + (7 * y_diff)), ("Arial", 20).into_font())).unwrap();
+
     let mut chart = ChartBuilder::on(&root)
         .margin(5)
         .x_label_area_size(30)
@@ -171,7 +183,7 @@ fn sim(config: &Config) {
         .draw().expect("chart draw failed.");
 
     for rep in 0..config.repetitions {
-        println!("rep: {}", rep);
+        print!("rep: {}", rep);
         let mut farm = Farm::new(config.cpus);
 
         for id in 0..config.job_count {
@@ -201,9 +213,11 @@ fn sim(config: &Config) {
                 finished = true;
             }
         }
+        print!(" - done. rendering...");
         chart.draw_series(LineSeries::new((
             0..=usage_seq.len() - 1).map(|x| (x as f32, usage_seq[x] as f32)),
         &BLACK,
         )).expect("failed to draw chart");
+        println!(" - done.");
     }
 }
