@@ -1,3 +1,5 @@
+use rand::prelude::*;
+
 struct Job {
     id: i32,
     frames: i32,
@@ -67,11 +69,20 @@ impl Farm {
 }
 
 fn main() {
-    let job1 = Job::new(0, 4, 2);
-    let job2 = Job::new(1, 4, 2);
+    let mut rng = thread_rng();
+    let job_count = 1;
     let mut farm = Farm::new(4);
-    farm.submit(job1);
-    farm.submit(job2);
+    for id in 0..=job_count {
+        let frames = rng.gen_range(1..10);
+        let chunk_size = rng.gen_range(1..frames);
+        let job = Job::new(id, frames, chunk_size);
+        farm.submit(job);
+
+    }
+    // let job1 = Job::new(0, 4, 2);
+    // let job2 = Job::new(1, 4, 2);
+    // farm.submit(job1);
+    // farm.submit(job2);
     for cycle in 0..=11 {
         println!("--- cycle: {} -------------------", cycle);
         println!(
