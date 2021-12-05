@@ -61,6 +61,7 @@ impl Farm {
     }
 
     fn render(&mut self) {
+        let mut log = String::new();
         'mainloop: for job in self.jobs.iter_mut() {
             for _ in 0..job.task_count {
                 if self.free_cpus == 0 {
@@ -82,7 +83,14 @@ impl Farm {
             }
         }
         self.jobs.retain(|x| x.frames > 0);
+        let mut usage = 100f32;
+        let used = self.cpus - self.free_cpus;
+        if used != self.cpus {
+            usage = (used as f32 / self.cpus as f32) * 100f32;
+        }
+        log += format!("util: {}%", usage).as_str();
         self.free_cpus = self.cpus;
+        println!("{}", log);
     }
 }
 
@@ -155,15 +163,19 @@ fn sim(config: &Config) {
 
     }
 
+    let mut finished = false;
     for cycle in 0..=config.max_cycles {
         println!("--- cycle: {} -------------------", cycle);
-        println!(
-            "job count: {}",
-            &farm.jobs.len()
-        );
+        // println!(
+        //     "job count: {}",
+        //     &farm.jobs.len()
+        // );
         farm.render();
-        if farm.jobs.len() == 0 {
+        if finished {
             break;
+        }
+        if farm.jobs.len() == 0 {
+            finished = true;
         }
     }
 }
