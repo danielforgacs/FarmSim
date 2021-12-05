@@ -1,4 +1,5 @@
 use rand::prelude::*;
+use serde::{Serialize, Deserialize};
 
 struct Job {
     id: i32,
@@ -14,6 +15,10 @@ struct Farm {
     free_cpus: i32,
 }
 
+#[derive(Serialize, Deserialize)]
+struct Config {
+    min_frames: i32,
+}
 impl Job {
     fn new(id: i32, frames: i32, chunk_size: i32) -> Self {
         let mut tasks = frames / chunk_size;
@@ -75,7 +80,26 @@ impl Farm {
     }
 }
 
+impl Config {
+    fn new() -> Self {
+        let config = Self { min_frames: 1 };
+        let json: String = serde_json::to_string(&config).expect("Can't serialize default config.");
+        std::fs::write("farmsimconf.json", json).expect("Can't write default json config.");
+        config
+    }
+}
 fn main() {
+    let config: Config = match std::fs::read_to_string("farmsimconf.json") {
+        Ok(jsontext) => match serde_json::from_str(&jsontext) {
+            Ok(config) => config,
+            Err(_) => Config::new(),
+        },
+        Err(_) => Config::new(),
+    };
+    println!("{}", config.min_frames);
+}
+
+fn sim() {
     let mut rng = thread_rng();
     let job_count = 1;
     let mut farm = Farm::new(4);
