@@ -69,14 +69,14 @@ impl Farm {
                 }
                 self.free_cpus -= 1;
                 job.render();
-                println!(
-                    "job id: {}, frames: {}, chunk size: {}, tasks: {}, frames left: {}",
-                    job.id,
-                    job.total_frames,
-                    job.chunk_size,
-                    job.task_count,
-                    job.frames,
-                );
+                // println!(
+                //     "job id: {}, frames: {}, chunk size: {}, tasks: {}, frames left: {}",
+                //     job.id,
+                //     job.total_frames,
+                //     job.chunk_size,
+                //     job.task_count,
+                //     job.frames,
+                // );
                 if job.frames == 0 {
                     break;
                 }
@@ -88,7 +88,14 @@ impl Farm {
         if used != self.cpus {
             usage = (used as f32 / self.cpus as f32) * 100f32;
         }
-        log += format!("util: {}%", usage).as_str();
+        log += format!(
+            "{:w1$}%, jobs: {:w2$}",
+            usage as u8,
+            self.jobs.len(),
+            w1=3,
+            w2=5,
+            )
+            .as_str();
         self.free_cpus = self.cpus;
         println!("{}", log);
     }
@@ -166,10 +173,6 @@ fn sim(config: &Config) {
     let mut finished = false;
     for cycle in 0..=config.max_cycles {
         println!("--- cycle: {} -------------------", cycle);
-        // println!(
-        //     "job count: {}",
-        //     &farm.jobs.len()
-        // );
         farm.render();
         if finished {
             break;
