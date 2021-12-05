@@ -20,6 +20,8 @@ struct Config {
     job_count: i32,
     min_frames: i32,
     max_frames: i32,
+    min_chunk_size: i32,
+    max_chunk_size: i32,
 }
 impl Job {
     fn new(id: i32, frames: i32, chunk_size: i32) -> Self {
@@ -92,6 +94,8 @@ Writing default \"farmsimconf.json\" config file."
             job_count: 1,
             min_frames: 1,
             max_frames: 1,
+            min_chunk_size: 1,
+            max_chunk_size: 1,
         };
         let json: String = serde_json::to_string(&config).expect("Can't serialize default config.");
         std::fs::write("farmsimconf.json", json).expect("Can't write default json config.");
@@ -106,6 +110,21 @@ fn main() {
         },
         Err(_) => Config::new(),
     };
+    if config.job_count < 1 || config.job_count > 1000 {
+        println!("Config job count: {}", config.job_count);
+        println!("Good job count: 1 - 1000.");
+        return;
+    }
+    if config.min_frames < 1 || config.max_frames > 1000 || config.max_frames < config.min_frames {
+        println!("Config frame range: {} - {}.", config.min_frames, config.max_frames);
+        println!("Good frame range: 1 - 1000.");
+        return;
+    }
+    if config.min_chunk_size < 1 || config.max_chunk_size > 1000 || config.max_chunk_size < config.min_chunk_size {
+        println!("config chunk size range: {} - {}", config.min_chunk_size, config.max_chunk_size);
+        println!("Good chunk size range:   1 - 1000.");
+        return;
+    }
     sim(&config);
 }
 
@@ -118,7 +137,10 @@ fn sim(config: &Config) {
         if config.max_frames != frames {
             frames = rng.gen_range(config.min_frames..=config.max_frames);
         }
-        let chunk_size = frames;
+        let mut chunk_size = config.min_chunk_size;
+        if config.min_chunk_size < config.max_chunk_size {
+            chunk_size = rng.gen_range(config.min_chunk_size..=config.max_chunk_size);
+        }
         let job = Job::new(id, frames, chunk_size);
         farm.submit(job);
 
