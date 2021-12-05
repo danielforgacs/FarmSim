@@ -3,10 +3,10 @@ use serde::{Serialize, Deserialize};
 use plotters::prelude::*;
 
 struct Job {
-    id: i32,
+    // id: i32,
     frames: i32,
-    total_frames: i32,
-    chunk_size: i32,
+    // total_frames: i32,
+    // chunk_size: i32,
     task_count: i32,
 }
 
@@ -28,16 +28,16 @@ struct Config {
     max_chunk_size: i32,
 }
 impl Job {
-    fn new(id: i32, frames: i32, chunk_size: i32) -> Self {
+    fn new(frames: i32, chunk_size: i32) -> Self {
         let mut tasks = frames / chunk_size;
         if frames % chunk_size > 0 {
             tasks += 1;
         }
         Self {
-            id,
+            // id,
             frames,
-            total_frames: frames,
-            chunk_size,
+            // total_frames: frames,
+            // chunk_size,
             task_count: tasks,
         }
     }
@@ -99,7 +99,7 @@ impl Farm {
             )
             .as_str();
         self.free_cpus = self.cpus;
-        println!("{}", log);
+        // println!("{}", log);
         usage
     }
 }
@@ -138,19 +138,19 @@ fn main() {
         println!("Good job count: 1 - 1000.");
         return;
     }
-    if config.min_frames < 1 || config.max_frames > 1000 || config.max_frames < config.min_frames {
+    if config.min_frames < 1 || config.max_frames > 4800 || config.max_frames < config.min_frames {
         println!("Config frame range: {} - {}.", config.min_frames, config.max_frames);
-        println!("Good frame range: 1 - 1000.");
+        println!("Good frame range: 1 - 4800.");
         return;
     }
-    if config.min_chunk_size < 1 || config.max_chunk_size > 1000 || config.max_chunk_size < config.min_chunk_size {
+    if config.min_chunk_size < 1 || config.max_chunk_size > 4800 || config.max_chunk_size < config.min_chunk_size {
         println!("config chunk size range: {} - {}", config.min_chunk_size, config.max_chunk_size);
-        println!("Good chunk size range:   1 - 1000.");
+        println!("Good chunk size range:   1 - 4800.");
         return;
     }
-    if config.max_cycles < 1 || config.max_cycles > 10000 {
+    if config.max_cycles < 1 || config.max_cycles > 1600 {
         println!("config cycles: {}", config.max_cycles);
-        println!("Good cycles range:   1 - 10000.");
+        println!("Good cycles range:   1 - 1600.");
         return;
     }
     sim(&config);
@@ -158,10 +158,22 @@ fn main() {
 
 fn sim(config: &Config) {
     let mut rng = thread_rng();
-    let root = BitMapBackend::new("farm_usage_plot.png", (1280, 720))
+    let root = BitMapBackend::new("farm_usage_plot.png", (1600, 900))
         .into_drawing_area();
     root.fill(&WHITE)
         .expect("can't fill the image.");
+    let text_x = 50;
+    let text_y = 400;
+    let y_diff = 25;
+    root.draw(&Text::new(format!("repetitions: {}", config.repetitions), (text_x, text_y + (0 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("max_cycles: {}", config.max_cycles), (text_x, text_y + (1 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("cpus: {}", config.cpus), (text_x, text_y + (2 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("job_count: {}", config.job_count), (text_x, text_y + (3 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("min_frames: {}", config.min_frames), (text_x, text_y + (4 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("max_frames: {}", config.max_frames), (text_x, text_y + (5 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("min_chunk_size: {}", config.min_chunk_size), (text_x, text_y + (6 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("max_chunk_size: {}", config.max_chunk_size), (text_x, text_y + (7 * y_diff)), ("Arial", 20).into_font())).unwrap();
+
     let mut chart = ChartBuilder::on(&root)
         .margin(5)
         .x_label_area_size(30)
@@ -170,10 +182,11 @@ fn sim(config: &Config) {
     chart.configure_mesh()
         .draw().expect("chart draw failed.");
 
-    for _ in 0..=config.repetitions {
+    for rep in 0..config.repetitions {
+        print!("rep: {}", rep);
         let mut farm = Farm::new(config.cpus);
 
-        for id in 0..config.job_count {
+        for _ in 0..config.job_count {
             let mut frames = config.min_frames;
             if config.max_frames != frames {
                 frames = rng.gen_range(config.min_frames..=config.max_frames);
@@ -182,16 +195,19 @@ fn sim(config: &Config) {
             if config.min_chunk_size < config.max_chunk_size {
                 chunk_size = rng.gen_range(config.min_chunk_size..=config.max_chunk_size);
             }
-            let job = Job::new(id, frames, chunk_size);
+            let job = Job::new(frames, chunk_size);
             farm.submit(job);
         }
 
         let mut usage_seq: Vec<f32> = Vec::new();
+        let mut jobs_done: Vec<f32> = Vec::new();
         let mut finished = false;
 
-        for cycle in 0..=config.max_cycles {
-            println!("--- cycle: {} -------------------", cycle);
+        for _ in 0..=config.max_cycles {
+            // println!("--- cycle: {} -------------------", cycle);
             let usage = farm.render();
+            let done_p = config.job_count as f32 / farm.jobs.len() as f32;
+            jobs_done.push(done_p);
             usage_seq.push(usage);
             if finished {
                 break;
@@ -200,9 +216,15 @@ fn sim(config: &Config) {
                 finished = true;
             }
         }
+        print!(" - done. rendering...");
         chart.draw_series(LineSeries::new((
             0..=usage_seq.len() - 1).map(|x| (x as f32, usage_seq[x] as f32)),
         &BLACK,
         )).expect("failed to draw chart");
+        chart.draw_series(LineSeries::new((
+            0..=usage_seq.len() - 1).map(|x| (x as f32, jobs_done[x] as f32)),
+        &GREEN,
+        )).expect("failed to draw chart");
+        println!(" - done.");
     }
 }
