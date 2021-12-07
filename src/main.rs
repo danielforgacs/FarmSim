@@ -243,4 +243,88 @@ mod test {
         job.render();
         assert_eq!(job.frame_num, 0);
     }
+
+    #[test]
+    fn farm_render_test_01() {
+        let job = Job::new(1, 1000, 0);
+        let mut farm = Farm::new(1);
+        farm.submit(job);
+        let usage = farm.render();
+        assert_eq!(usage, 100.0);
+        let usage = farm.render();
+        assert_eq!(usage, 0f32);
+    }
+
+    #[test]
+    fn farm_render_test_02() {
+        let job = Job::new(3, 1000, 0);
+        let mut farm = Farm::new(1);
+        farm.submit(job);
+        let usage = farm.render();
+        assert_eq!(usage, 100.0);
+        let usage = farm.render();
+        assert_eq!(usage, 100.0);
+        let usage = farm.render();
+        assert_eq!(usage, 100.0);
+        let usage = farm.render();
+        assert_eq!(usage, 0f32);
+    }
+
+    #[test]
+    fn farm_render_test_03() {
+        let job = Job::new(2, 1000, 0);
+        let mut farm = Farm::new(2);
+        farm.submit(job);
+        let usage = farm.render();
+        assert_eq!(usage, 50.0);
+        let usage = farm.render();
+        assert_eq!(usage, 50.0);
+        let usage = farm.render();
+        assert_eq!(usage, 0f32);
+    }
+
+    #[test]
+    fn farm_render_test_04() {
+        let job = Job::new(4, 1000, 0);
+        let mut farm = Farm::new(4);
+        farm.submit(job);
+
+        for _ in 0..4 {
+            let usage = farm.render();
+            assert_eq!(usage, 25.0);
+        }
+
+        let usage = farm.render();
+        assert_eq!(usage, 0f32);
+    }
+
+    #[test]
+    fn farm_render_test_05() {
+        let job = Job::new(10, 1000, 0);
+        let mut farm = Farm::new(10);
+        farm.submit(job);
+
+        for _ in 0..10 {
+            let usage = farm.render();
+            assert_eq!(usage, 10.0);
+        }
+
+        let usage = farm.render();
+        assert_eq!(usage, 0f32);
+    }
+
+    #[test]
+    fn farm_render_test_06() {
+        let job = Job::new(10, 2, 0);
+        let mut farm = Farm::new(10);
+        farm.submit(job);
+
+        for _ in 0..2 {
+            let usage = farm.render();
+            assert_eq!(usage, 50.0);
+        }
+
+        let usage = farm.render();
+        assert_eq!(usage, 0f32);
+    }
 }
