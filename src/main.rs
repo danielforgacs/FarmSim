@@ -3,10 +3,7 @@ use serde::{Serialize, Deserialize};
 use plotters::prelude::*;
 
 struct Job {
-    // id: i32,
     frames: i32,
-    // total_frames: i32,
-    // chunk_size: i32,
     task_count: i32,
 }
 
@@ -41,10 +38,7 @@ impl Job {
         frames += tasks * startup_cycles;
 
         Self {
-            // id,
             frames,
-            // total_frames: frames,
-            // chunk_size,
             task_count: tasks,
         }
     }
@@ -78,14 +72,6 @@ impl Farm {
                 }
                 self.free_cpus -= 1;
                 job.render();
-                // println!(
-                //     "job id: {}, frames: {}, chunk size: {}, tasks: {}, frames left: {}",
-                //     job.id,
-                //     job.total_frames,
-                //     job.chunk_size,
-                //     job.task_count,
-                //     job.frames,
-                // );
                 if job.frames == 0 {
                     break;
                 }
@@ -106,7 +92,6 @@ impl Farm {
             )
             .as_str();
         self.free_cpus = self.cpus;
-        // println!("{}", log);
         usage
     }
 }
@@ -223,7 +208,6 @@ fn sim(config: &Config) {
         let mut finished = false;
 
         for _ in 0..=config.max_cycles {
-            // println!("--- cycle: {} -------------------", cycle);
             let usage = farm.render();
             let done_p = config.job_count as f32 / farm.jobs.len() as f32;
             jobs_done.push(done_p);
