@@ -2,6 +2,9 @@ use rand::prelude::*;
 use serde::{Serialize, Deserialize};
 use plotters::prelude::*;
 
+const PLOT_WIDTH: u32 = 1600;
+const PLOT_HEIGTH: u32 = 900;
+
 struct Job {
     frame_num: i32,
     task_num: i32,
@@ -160,7 +163,7 @@ fn main() {
 
 fn sim(config: &Config) {
     let mut rng = thread_rng();
-    let root = BitMapBackend::new("farm_usage_plot.png", (1600, 900))
+    let root = BitMapBackend::new("farm_usage_plot.png", (PLOT_WIDTH, PLOT_HEIGTH))
         .into_drawing_area();
     root.fill(&WHITE)
         .expect("can't fill the image.");
