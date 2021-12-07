@@ -247,3 +247,47 @@ fn sim(config: &Config) {
         println!(" - done.");
     }
 }
+
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn new_job_framge_count() {
+        let job = Job::new(1, 1, 0);
+        assert_eq!(job.frames, 1);
+        let job = Job::new(2, 1, 0);
+        assert_eq!(job.frames, 2);
+        let job = Job::new(1, 100, 0);
+        assert_eq!(job.frames, 1);
+        let job = Job::new(1, 1, 1);
+        assert_eq!(job.frames, 2);
+        let job = Job::new(1, 1, 2);
+        assert_eq!(job.frames, 3);
+        let job = Job::new(2, 1, 2);
+        assert_eq!(job.frames, 6);
+        let job = Job::new(10, 1, 10);
+        assert_eq!(job.frames, 110);
+        let job = Job::new(10, 2, 10);
+        assert_eq!(job.frames, 60);
+        let job = Job::new(10, 5, 10);
+        assert_eq!(job.frames, 30);
+        let job = Job::new(10, 10, 10);
+        assert_eq!(job.frames, 20);
+    }
+
+    #[test]
+    fn job_render_takes_one_frame_until_zero() {
+        let mut job = Job::new(2, 10, 0);
+        assert_eq!(job.frames, 2);
+        job.render();
+        assert_eq!(job.frames, 1);
+        job.render();
+        assert_eq!(job.frames, 0);
+        job.render();
+        assert_eq!(job.frames, 0);
+        job.render();
+        assert_eq!(job.frames, 0);
+    }
+}
