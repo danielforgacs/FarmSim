@@ -123,31 +123,6 @@ fn main() {
         },
         Err(_) => Config::new(),
     };
-    if config.jobs < 1 || config.jobs > 1000 {
-        println!("Config job count: {}", config.jobs);
-        println!("Good job count: 1 - 1000.");
-        return;
-    }
-    if config.min_frames < 1 || config.max_frames > 4800 || config.max_frames < config.min_frames {
-        println!("Config frame range: {} - {}.", config.min_frames, config.max_frames);
-        println!("Good frame range: 1 - 4800.");
-        return;
-    }
-    if config.min_task_frames < 1 || config.max_task_frames > 4800 || config.max_task_frames < config.min_task_frames {
-        println!("config chunk size range: {} - {}", config.min_task_frames, config.max_task_frames);
-        println!("Good chunk size range:   1 - 4800.");
-        return;
-    }
-    if config.max_render_cycles < 1 || config.max_render_cycles > 1600 {
-        println!("config cycles: {}", config.max_render_cycles);
-        println!("Good cycles range:   1 - 1600.");
-        return;
-    }
-    if config.min_frame_render_cycles < 1 || config.max_frame_render_cycles > 100 || config.max_frame_render_cycles < config.min_frame_render_cycles {
-        println!("frame cycles: {} - {}", config.min_frame_render_cycles, config.max_frame_render_cycles);
-        println!("Good cycles range:   1 - 100.");
-        return;
-    }
     sim(&config);
 }
 
