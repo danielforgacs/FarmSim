@@ -170,8 +170,8 @@ fn sim(config: &Config) {
     let text_x = 50;
     let text_y = 400;
     let y_diff = 25;
-    root.draw(&Text::new(format!("repetitions: {}", config.repetitions), (text_x, text_y + (0 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("max_cycles: {}", config.max_render_cycles), (text_x, text_y + (1 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("repetitions: {}", config.repetitions), (text_x, text_y), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("max_cycles: {}", config.max_render_cycles), (text_x, text_y + y_diff), ("Arial", 20).into_font())).unwrap();
     root.draw(&Text::new(format!("cpus: {}", config.cpus), (text_x, text_y + (2 * y_diff)), ("Arial", 20).into_font())).unwrap();
     root.draw(&Text::new(format!("job_count: {}", config.jobs), (text_x, text_y + (3 * y_diff)), ("Arial", 20).into_font())).unwrap();
     root.draw(&Text::new(format!("frames: {} - {}", config.min_frames, config.max_frames), (text_x, text_y + (4 * y_diff)), ("Arial", 20).into_font())).unwrap();
@@ -218,7 +218,7 @@ fn sim(config: &Config) {
             if finished {
                 break;
             }
-            if farm.jobs.len() == 0 {
+            if farm.jobs.is_empty() {
                 finished = true;
             }
         }
