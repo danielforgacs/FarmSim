@@ -67,6 +67,7 @@ impl Farm {
     }
 
     fn render(&mut self) -> f32 {
+        let mut log = String::new();
         'mainloop: for job in self.jobs.iter_mut() {
             for _ in 0..job.task_num {
                 if self.free_cpu_num == 0 {
@@ -85,6 +86,15 @@ impl Farm {
         if used != self.cpu_num {
             usage = (used as f32 / self.cpu_num as f32) * 100f32;
         }
+        log += format!(
+            "{:w1$}%, jobs: {:w2$}",
+            usage as u8,
+            self.jobs.len(),
+            w1=3,
+            w2=5,
+            )
+            .as_str();
+        self.free_cpu_num = self.cpu_num;
         usage
     }
 }
