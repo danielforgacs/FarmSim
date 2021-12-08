@@ -124,7 +124,33 @@ fn main() {
         },
         Err(_) => Config::new(),
     };
-    sim(&config);
+    if config.min_frames < 1 || config.max_frames < config.min_frames {
+        println!("Bad min max frames.");
+        return;
+    }
+    if config.min_task_frames < 1 || config.max_task_frames < config.min_task_frames{
+        println!("Bad min max task frames.");
+        return;
+    }
+
+    let mut init_values: Vec<Vec<u32>> = Vec::new();
+    for _ in 0..config.jobs {
+        init_values.push(generate_job_init_values(&config));
+    }
+    let jobs: Vec<Job> = init_values.iter().map(|vals| Job::new(vals[0], vals[1], vals[2])).collect();
+    let mut farm = Farm::new(config.cpus);
+    for job in jobs {
+        farm.submit(job);
+    }
+    // sim(&config);
+}
+
+fn generate_job_init_values(config: &Config) -> Vec<u32> {
+    let mut rng = thread_rng();
+    let frames = rng.gen_range(config.min_frames..=config.max_frames);
+    let task_frames = rng.gen_range(config.min_task_frames..=config.max_task_frames);
+    let startup_cycles = rng.gen_range(config.min_task_startup_cycles..=config.max_task_startup_cycles);
+    vec![frames, task_frames, startup_cycles]
 }
 
 fn sim(config: &Config) {
