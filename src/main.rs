@@ -32,6 +32,10 @@ struct Config {
     max_task_startup_cycles: u32,
 }
 
+struct SimResult {
+    farm_usage: Vec<f32>,
+}
+
 impl Job {
     fn new(mut frames: u32, chunk_size: u32, startup_cycles: u32) -> Self {
         let mut tasks = frames / chunk_size;
@@ -137,17 +141,17 @@ fn main() {
         farm.submit(job);
     }
     let results = run_sim(farm, config.max_render_cycles);
-    println!("{}", results.len());
-    print!("usage: {:?}, ", results);
+    println!("{}", results.farm_usage.len());
+    print!("usage: {:?}, ", results.farm_usage);
 
     // sim(&config);
 }
 
-fn run_sim(mut farm: Farm, max_cycles: u32) -> Vec<f32> {
+fn run_sim(mut farm: Farm, max_cycles: u32) -> SimResult {
     let mut finished = false;
-    let mut usage: Vec<f32> = Vec::new();
+    let mut farm_usage: Vec<f32> = Vec::new();
     for _ in 0..max_cycles {
-        usage.push(farm.render());
+        farm_usage.push(farm.render());
         if finished {
             break;
         }
@@ -155,7 +159,7 @@ fn run_sim(mut farm: Farm, max_cycles: u32) -> Vec<f32> {
             finished = true;
         }
     }
-    usage
+    SimResult { farm_usage }
 }
 
 fn sanity_check_config(config: &Config) -> Option<&str> {
