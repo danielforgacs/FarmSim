@@ -39,9 +39,9 @@ struct SimResult {
 }
 
 impl Job {
-    fn new(mut frames: u32, chunk_size: u32, startup_cycles: u32) -> Self {
-        let mut tasks = frames / chunk_size;
-        if frames % chunk_size > 0 {
+    fn new(mut frames: u32, task_frames: u32, startup_cycles: u32) -> Self {
+        let mut tasks = frames / task_frames;
+        if frames % task_frames > 0 {
             tasks += 1;
         }
         frames += tasks * startup_cycles;
@@ -148,7 +148,7 @@ fn main() {
         all_results.push(run_sim(farm, config.max_render_cycles));
     }
     process_results(all_results);
-    // sim(&config);
+    sim(&config);
 }
 
 fn process_results(all_results: Vec<SimResult>) {
@@ -476,5 +476,10 @@ mod test {
         let result = run_sim(farm, config.max_render_cycles);
         assert_eq!(result.total_frames, 28);
         assert_eq!(result.last_cycle, 14);
+    }
+
+    #[test]
+    fn cycle_per_frame() {
+        let job = Job::new(1, 1, 0);
     }
 }
