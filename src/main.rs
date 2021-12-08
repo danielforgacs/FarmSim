@@ -97,12 +97,12 @@ impl Config {
 Writing default \"farmsimconf.json\" config file."
         );
         let config = Self {
-            repetitions: 10,
+            repetitions: 1,
             max_render_cycles: 1600,
-            cpus: 100,
-            jobs: 100,
-            min_frames: 500,
-            max_frames: 500,
+            cpus: 2,
+            jobs: 2,
+            min_frames: 4,
+            max_frames: 4,
             min_task_frames: 1,
             max_task_frames: 1,
             min_frame_render_cycles: 1,
@@ -133,15 +133,14 @@ fn main() {
         return;
     }
 
-    let mut init_values: Vec<Vec<u32>> = Vec::new();
-    for _ in 0..config.jobs {
-        init_values.push(generate_job_init_values(&config));
-    }
-    let jobs: Vec<Job> = init_values.iter().map(|vals| Job::new(vals[0], vals[1], vals[2])).collect();
     let mut farm = Farm::new(config.cpus);
-    for job in jobs {
+    for _ in 0..config.jobs {
+        let init_data = generate_job_init_values(&config);
+        let job = Job::new(init_data[0], init_data[1], init_data[2]);
         farm.submit(job);
     }
+
+
     // sim(&config);
 }
 
