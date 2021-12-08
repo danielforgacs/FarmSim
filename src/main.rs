@@ -136,9 +136,26 @@ fn main() {
         let job = Job::new(init_data[0], init_data[1], init_data[2]);
         farm.submit(job);
     }
-
+    let results = run_sim(farm, config.max_render_cycles);
+    println!("{}", results.len());
+    print!("usage: {:?}, ", results);
 
     // sim(&config);
+}
+
+fn run_sim(mut farm: Farm, max_cycles: u32) -> Vec<f32> {
+    let mut finished = false;
+    let mut usage: Vec<f32> = Vec::new();
+    for _ in 0..max_cycles {
+        usage.push(farm.render());
+        if finished {
+            break;
+        }
+        if farm.jobs.is_empty() {
+            finished = true;
+        }
+    }
+    usage
 }
 
 fn sanity_check_config(config: &Config) -> Option<&str> {
