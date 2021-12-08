@@ -155,6 +155,8 @@ fn process_results(all_results: Vec<SimResult>) {
     for result in all_results {
         println!("----------------------------------------");
         println!("total frames: {}", result.total_frames);
+        println!("last cycle: {}", result.last_cycle);
+        println!("usage: {:?}", result.farm_usage);
     }
 }
 
