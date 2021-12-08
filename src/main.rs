@@ -450,4 +450,31 @@ mod test {
         assert_eq!(result.last_cycle, 1);
         assert_eq!(result.farm_usage, vec![100.0, 0.0]);
     }
+
+    #[test]
+    fn sim_02() {
+        let mut config = Config::new();
+        config.repetitions = 1;
+        config.max_render_cycles = 1000;
+        config.cpus = 2;
+        config.jobs = 2;
+        config.min_frames = 10;
+        config.max_frames = 10;
+        config.min_task_frames = 5;
+        config.max_task_frames = 5;
+        config.min_frame_render_cycles = 1;
+        config.max_frame_render_cycles = 1;
+        config.min_task_startup_cycles = 2;
+        config.max_task_startup_cycles = 2;
+
+        let mut farm = Farm::new(config.cpus);
+        for _ in 0..config.jobs {
+            let init_data = generate_job_init_values(&config);
+            let job = Job::new(init_data[0], init_data[1], init_data[2]);
+            farm.submit(job);
+        }
+        let result = run_sim(farm, config.max_render_cycles);
+        assert_eq!(result.total_frames, 28);
+        assert_eq!(result.last_cycle, 14);
+    }
 }
