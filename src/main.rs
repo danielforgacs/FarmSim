@@ -194,7 +194,8 @@ fn sanity_check_config(config: &Config) -> Option<&str> {
 
 fn generate_job_init_values(config: &Config) -> Vec<u32> {
     let mut rng = thread_rng();
-    let frames = rng.gen_range(config.min_frames_per_job..=config.max_frames_per_job);
+    let mut frames = rng.gen_range(config.min_frames_per_job..=config.max_frames_per_job);
+    frames *= rng.gen_range(config.min_render_cycles_per_frame..=config.max_render_cycles_per_frame);
     let task_frames = rng.gen_range(config.min_frames_per_task..=config.max_frames_per_task);
     let startup_cycles = rng.gen_range(config.min_task_startup_cycles..=config.max_task_startup_cycles);
     vec![frames, task_frames, startup_cycles]
@@ -479,7 +480,80 @@ mod test {
     }
 
     #[test]
-    fn cycle_per_frame() {
-        let job = Job::new(1, 1, 0);
+    fn gen_job_parms_and_init_job() {
+        let mut config = Config::new();
+        config.min_frames_per_job = 1;
+        config.max_frames_per_job = 1;
+        config.min_frames_per_task = 1;
+        config.max_frames_per_task = 1;
+        config.min_render_cycles_per_frame = 1;
+        config.max_render_cycles_per_frame = 1;
+        config.min_task_startup_cycles = 0;
+        config.max_task_startup_cycles = 0;
+        let job_values = generate_job_init_values(&config);
+        assert_eq!(job_values, vec![1, 1, 0]);
+        let job = Job::new(job_values[0], job_values[1], job_values[2]);
+        assert_eq!(job.frame_num, 1);
+        assert_eq!(job.task_num, 1);
+
+        let mut config = Config::new();
+        config.min_frames_per_job = 10;
+        config.max_frames_per_job = 10;
+        config.min_frames_per_task = 1;
+        config.max_frames_per_task = 1;
+        config.min_render_cycles_per_frame = 1;
+        config.max_render_cycles_per_frame = 1;
+        config.min_task_startup_cycles = 0;
+        config.max_task_startup_cycles = 0;
+        let job_values = generate_job_init_values(&config);
+        assert_eq!(job_values, vec![10, 1, 0]);
+        let job = Job::new(job_values[0], job_values[1], job_values[2]);
+        assert_eq!(job.frame_num, 10);
+        assert_eq!(job.task_num, 10);
+
+        let mut config = Config::new();
+        config.min_frames_per_job = 10;
+        config.max_frames_per_job = 10;
+        config.min_frames_per_task = 2;
+        config.max_frames_per_task = 2;
+        config.min_render_cycles_per_frame = 3;
+        config.max_render_cycles_per_frame = 3;
+        config.min_task_startup_cycles = 0;
+        config.max_task_startup_cycles = 0;
+        let job_values = generate_job_init_values(&config);
+        assert_eq!(job_values, vec![30, 2, 0]);
+        let job = Job::new(job_values[0], job_values[1], job_values[2]);
+        assert_eq!(job.frame_num, 30);
+        assert_eq!(job.task_num, 15);
+
+        let mut config = Config::new();
+        config.min_frames_per_job = 10;
+        config.max_frames_per_job = 10;
+        config.min_frames_per_task = 2;
+        config.max_frames_per_task = 2;
+        config.min_render_cycles_per_frame = 3;
+        config.max_render_cycles_per_frame = 3;
+        config.min_task_startup_cycles = 0;
+        config.max_task_startup_cycles = 0;
+        let job_values = generate_job_init_values(&config);
+        assert_eq!(job_values, vec![30, 2, 0]);
+        let job = Job::new(job_values[0], job_values[1], job_values[2]);
+        assert_eq!(job.frame_num, 30);
+        assert_eq!(job.task_num, 15);
+
+        let mut config = Config::new();
+        config.min_frames_per_job = 10;
+        config.max_frames_per_job = 10;
+        config.min_render_cycles_per_frame = 3;
+        config.max_render_cycles_per_frame = 3;
+        config.min_frames_per_task = 5;
+        config.max_frames_per_task = 5;
+        config.min_task_startup_cycles = 3;
+        config.max_task_startup_cycles = 3;
+        let job_values = generate_job_init_values(&config);
+        assert_eq!(job_values, vec![30, 5, 3]);
+        let job = Job::new(job_values[0], job_values[1], job_values[2]);
+        assert_eq!(job.frame_num, 48);
+        assert_eq!(job.task_num, 6);
     }
 }
