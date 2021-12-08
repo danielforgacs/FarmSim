@@ -34,6 +34,8 @@ struct Config {
 
 struct SimResult {
     farm_usage: Vec<f32>,
+    last_cycle: u32,
+    total_frames: u32,
 }
 
 impl Job {
@@ -134,6 +136,8 @@ fn main() {
         return;
     }
 
+    let mut all_results: Vec<SimResult> = Vec::new();
+
     for _ in 0..config.repetitions {
         let mut farm = Farm::new(config.cpus);
         for _ in 0..config.jobs {
@@ -141,27 +145,39 @@ fn main() {
             let job = Job::new(init_data[0], init_data[1], init_data[2]);
             farm.submit(job);
         }
-        let results = run_sim(farm, config.max_render_cycles);
-        println!("{}", results.farm_usage.len());
-        println!("usage: {:?}, ", results.farm_usage);
+        all_results.push(run_sim(farm, config.max_render_cycles));
     }
-
+    process_results(all_results);
     // sim(&config);
 }
 
+fn process_results(all_results: Vec<SimResult>) {
+    for result in all_results {
+        println!("----------------------------------------");
+        println!("total frames: {}", result.total_frames);
+    }
+}
+
 fn run_sim(mut farm: Farm, max_cycles: u32) -> SimResult {
+    let total_frames = farm.jobs.iter().map(|x| x.frame_num).sum();
     let mut finished = false;
     let mut farm_usage: Vec<f32> = Vec::new();
-    for _ in 0..max_cycles {
+    let mut last_cycle = 0_u32;
+    for cycle in 0..max_cycles {
         farm_usage.push(farm.render());
         if finished {
+            last_cycle = cycle;
             break;
         }
         if farm.jobs.is_empty() {
             finished = true;
         }
     }
-    SimResult { farm_usage }
+    SimResult {
+        farm_usage,
+        last_cycle,
+        total_frames,
+    }
 }
 
 fn sanity_check_config(config: &Config) -> Option<&str> {
