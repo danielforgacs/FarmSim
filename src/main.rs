@@ -134,15 +134,17 @@ fn main() {
         return;
     }
 
-    let mut farm = Farm::new(config.cpus);
-    for _ in 0..config.jobs {
-        let init_data = generate_job_init_values(&config);
-        let job = Job::new(init_data[0], init_data[1], init_data[2]);
-        farm.submit(job);
+    for _ in 0..config.repetitions {
+        let mut farm = Farm::new(config.cpus);
+        for _ in 0..config.jobs {
+            let init_data = generate_job_init_values(&config);
+            let job = Job::new(init_data[0], init_data[1], init_data[2]);
+            farm.submit(job);
+        }
+        let results = run_sim(farm, config.max_render_cycles);
+        println!("{}", results.farm_usage.len());
+        println!("usage: {:?}, ", results.farm_usage);
     }
-    let results = run_sim(farm, config.max_render_cycles);
-    println!("{}", results.farm_usage.len());
-    print!("usage: {:?}, ", results.farm_usage);
 
     // sim(&config);
 }
