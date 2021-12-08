@@ -22,12 +22,12 @@ struct Config {
     max_render_cycles: u32,
     cpus: u32,
     jobs: u32,
-    min_frames: u32,
-    max_frames: u32,
-    min_task_frames: u32,
-    max_task_frames: u32,
-    min_frame_render_cycles: u32,
-    max_frame_render_cycles: u32,
+    min_frames_per_job: u32,
+    max_frames_per_job: u32,
+    min_frames_per_task: u32,
+    max_frames_per_task: u32,
+    min_render_cycles_per_frame: u32,
+    max_render_cycles_per_frame: u32,
     min_task_startup_cycles: u32,
     max_task_startup_cycles: u32,
 }
@@ -107,12 +107,12 @@ Writing default \"farmsimconf.json\" config file."
             max_render_cycles: 1600,
             cpus: 1,
             jobs: 1,
-            min_frames: 1,
-            max_frames: 1,
-            min_task_frames: 1,
-            max_task_frames: 1,
-            min_frame_render_cycles: 1,
-            max_frame_render_cycles: 1,
+            min_frames_per_job: 1,
+            max_frames_per_job: 1,
+            min_frames_per_task: 1,
+            max_frames_per_task: 1,
+            min_render_cycles_per_frame: 1,
+            max_render_cycles_per_frame: 1,
             min_task_startup_cycles: 0,
             max_task_startup_cycles: 0,
         };
@@ -183,10 +183,10 @@ fn run_sim(mut farm: Farm, max_cycles: u32) -> SimResult {
 }
 
 fn sanity_check_config(config: &Config) -> Option<&str> {
-    if config.min_frames < 1 || config.max_frames < config.min_frames {
+    if config.min_frames_per_job < 1 || config.max_frames_per_job < config.min_frames_per_job {
         return Some("Bad frame range.");
     }
-    if config.min_task_frames < 1 || config.max_task_frames < config.min_task_frames{
+    if config.min_frames_per_task < 1 || config.max_frames_per_task < config.min_frames_per_task{
         return Some("Bad task range.");
     }
     Option::None
@@ -194,8 +194,8 @@ fn sanity_check_config(config: &Config) -> Option<&str> {
 
 fn generate_job_init_values(config: &Config) -> Vec<u32> {
     let mut rng = thread_rng();
-    let frames = rng.gen_range(config.min_frames..=config.max_frames);
-    let task_frames = rng.gen_range(config.min_task_frames..=config.max_task_frames);
+    let frames = rng.gen_range(config.min_frames_per_job..=config.max_frames_per_job);
+    let task_frames = rng.gen_range(config.min_frames_per_task..=config.max_frames_per_task);
     let startup_cycles = rng.gen_range(config.min_task_startup_cycles..=config.max_task_startup_cycles);
     vec![frames, task_frames, startup_cycles]
 }
@@ -213,9 +213,9 @@ fn sim(config: &Config) {
     root.draw(&Text::new(format!("max_cycles: {}", config.max_render_cycles), (text_x, text_y + y_diff), ("Arial", 20).into_font())).unwrap();
     root.draw(&Text::new(format!("cpus: {}", config.cpus), (text_x, text_y + (2 * y_diff)), ("Arial", 20).into_font())).unwrap();
     root.draw(&Text::new(format!("job_count: {}", config.jobs), (text_x, text_y + (3 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("frames: {} - {}", config.min_frames, config.max_frames), (text_x, text_y + (4 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("chunk_size: {} - {}", config.min_task_frames, config.max_task_frames), (text_x, text_y + (5 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("frame_cycles: {} - {}", config.min_frame_render_cycles, config.max_frame_render_cycles), (text_x, text_y + (6 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("frames: {} - {}", config.min_frames_per_job, config.max_frames_per_job), (text_x, text_y + (4 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("chunk_size: {} - {}", config.min_frames_per_task, config.max_frames_per_task), (text_x, text_y + (5 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("frame_cycles: {} - {}", config.min_render_cycles_per_frame, config.max_render_cycles_per_frame), (text_x, text_y + (6 * y_diff)), ("Arial", 20).into_font())).unwrap();
     root.draw(&Text::new(format!("min_startup_cycles: {} - {}", config.min_task_startup_cycles, config.max_task_startup_cycles), (text_x, text_y + (7 * y_diff)), ("Arial", 20).into_font())).unwrap();
 
     let mut chart = ChartBuilder::on(&root)
@@ -231,14 +231,14 @@ fn sim(config: &Config) {
         let mut farm = Farm::new(config.cpus);
 
         for _ in 0..config.jobs {
-            let mut frames = config.min_frames;
-            if config.max_frames != frames {
-                frames = rng.gen_range(config.min_frames..=config.max_frames);
+            let mut frames = config.min_frames_per_job;
+            if config.max_frames_per_job != frames {
+                frames = rng.gen_range(config.min_frames_per_job..=config.max_frames_per_job);
             }
-            frames *= rng.gen_range(config.min_frame_render_cycles..=config.max_frame_render_cycles);
-            let mut chunk_size = config.min_task_frames;
-            if config.min_task_frames < config.max_task_frames {
-                chunk_size = rng.gen_range(config.min_task_frames..=config.max_task_frames);
+            frames *= rng.gen_range(config.min_render_cycles_per_frame..=config.max_render_cycles_per_frame);
+            let mut chunk_size = config.min_frames_per_task;
+            if config.min_frames_per_task < config.max_frames_per_task {
+                chunk_size = rng.gen_range(config.min_frames_per_task..=config.max_frames_per_task);
             }
             let startup_cycles = rng.gen_range(config.min_task_startup_cycles..=config.max_task_startup_cycles);
             let job = Job::new(frames, chunk_size, startup_cycles);
@@ -430,12 +430,12 @@ mod test {
         config.max_render_cycles = 100;
         config.cpus = 1;
         config.jobs = 1;
-        config.min_frames = 1;
-        config.max_frames = 1;
-        config.min_task_frames = 1;
-        config.max_task_frames = 1;
-        config.min_frame_render_cycles = 1;
-        config.max_frame_render_cycles = 1;
+        config.min_frames_per_job = 1;
+        config.max_frames_per_job = 1;
+        config.min_frames_per_task = 1;
+        config.max_frames_per_task = 1;
+        config.min_render_cycles_per_frame = 1;
+        config.max_render_cycles_per_frame = 1;
         config.min_task_startup_cycles = 0;
         config.max_task_startup_cycles = 0;
 
@@ -458,12 +458,12 @@ mod test {
         config.max_render_cycles = 1000;
         config.cpus = 2;
         config.jobs = 2;
-        config.min_frames = 10;
-        config.max_frames = 10;
-        config.min_task_frames = 5;
-        config.max_task_frames = 5;
-        config.min_frame_render_cycles = 1;
-        config.max_frame_render_cycles = 1;
+        config.min_frames_per_job = 10;
+        config.max_frames_per_job = 10;
+        config.min_frames_per_task = 5;
+        config.max_frames_per_task = 5;
+        config.min_render_cycles_per_frame = 1;
+        config.max_render_cycles_per_frame = 1;
         config.min_task_startup_cycles = 2;
         config.max_task_startup_cycles = 2;
 
