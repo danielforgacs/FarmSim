@@ -124,12 +124,9 @@ fn main() {
         },
         Err(_) => Config::new(),
     };
-    if config.min_frames < 1 || config.max_frames < config.min_frames {
-        println!("Bad min max frames.");
-        return;
-    }
-    if config.min_task_frames < 1 || config.max_task_frames < config.min_task_frames{
-        println!("Bad min max task frames.");
+
+    if let Some(error_message) = sanity_check_config(&config) {
+        println!("{}", error_message);
         return;
     }
 
@@ -142,6 +139,16 @@ fn main() {
 
 
     // sim(&config);
+}
+
+fn sanity_check_config(config: &Config) -> Option<&str> {
+    if config.min_frames < 1 || config.max_frames < config.min_frames {
+        return Some("Bad frame range.");
+    }
+    if config.min_task_frames < 1 || config.max_task_frames < config.min_task_frames{
+        return Some("Bad task range.");
+    }
+    Option::None
 }
 
 fn generate_job_init_values(config: &Config) -> Vec<u32> {
