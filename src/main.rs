@@ -6,34 +6,34 @@ const PLOT_WIDTH: u32 = 1600;
 const PLOT_HEIGTH: u32 = 900;
 
 struct Job {
-    frame_num: i32,
-    task_num: i32,
+    frame_num: u32,
+    task_num: u32,
 }
 
 struct Farm {
     jobs: Vec<Job>,
-    cpu_num: i32,
-    free_cpu_num: i32,
+    cpu_num: u32,
+    free_cpu_num: u32,
 }
 
 #[derive(Serialize, Deserialize)]
 struct Config {
-    repetitions: i32,
-    max_render_cycles: i32,
-    cpus: i32,
-    jobs: i32,
-    min_frames: i32,
-    max_frames: i32,
-    min_task_frames: i32,
-    max_task_frames: i32,
-    min_frame_render_cycles: i32,
-    max_frame_render_cycles: i32,
-    min_task_startup_cycles: i32,
-    max_task_startup_cycles: i32,
+    repetitions: u32,
+    max_render_cycles: u32,
+    cpus: u32,
+    jobs: u32,
+    min_frames: u32,
+    max_frames: u32,
+    min_task_frames: u32,
+    max_task_frames: u32,
+    min_frame_render_cycles: u32,
+    max_frame_render_cycles: u32,
+    min_task_startup_cycles: u32,
+    max_task_startup_cycles: u32,
 }
 
 impl Job {
-    fn new(mut frames: i32, chunk_size: i32, startup_cycles: i32) -> Self {
+    fn new(mut frames: u32, chunk_size: u32, startup_cycles: u32) -> Self {
         let mut tasks = frames / chunk_size;
         if frames % chunk_size > 0 {
             tasks += 1;
@@ -54,11 +54,11 @@ impl Job {
 }
 
 impl Farm {
-    fn new(cpus: i32) -> Self {
+    fn new(cpu_num: u32) -> Self {
         Self {
             jobs: Vec::new(),
-            cpu_num: cpus,
-            free_cpu_num: cpus,
+            cpu_num,
+            free_cpu_num: cpu_num,
         }
     }
 
