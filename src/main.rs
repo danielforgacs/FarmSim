@@ -6,28 +6,28 @@ const PLOT_WIDTH: u32 = 1600;
 const PLOT_HEIGTH: u32 = 900;
 
 struct Job {
-    frame_num: u32,
-    task_num: u32,
+    frame_count: u32,
+    task_count: u32,
 }
 
 struct Farm {
     jobs: Vec<Job>,
-    cpu_num: u32,
-    free_cpu_num: u32,
+    cpu_count: u32,
+    free_cpu_count: u32,
 }
 
 #[derive(Serialize, Deserialize)]
 struct Config {
     repetitions: u32,
     max_render_cycles: u32,
-    cpus: u32,
-    jobs: u32,
+    farm_cpus: u32,
+    initial_job_count: u32,
     min_frames_per_job: u32,
     max_frames_per_job: u32,
-    min_frames_per_task: u32,
-    max_frames_per_task: u32,
     min_render_cycles_per_frame: u32,
     max_render_cycles_per_frame: u32,
+    min_frames_per_task: u32,
+    max_frames_per_task: u32,
     min_task_startup_cycles: u32,
     max_task_startup_cycles: u32,
 }
@@ -47,14 +47,14 @@ impl Job {
         frames += tasks * startup_cycles;
 
         Self {
-            frame_num: frames,
-            task_num: tasks,
+            frame_count: frames,
+            task_count: tasks,
         }
     }
 
     fn render(&mut self) {
-        if self.frame_num > 0 {
-            self.frame_num -= 1;
+        if self.frame_count > 0 {
+            self.frame_count -= 1;
         }
     }
 }
@@ -63,8 +63,8 @@ impl Farm {
     fn new(cpu_num: u32) -> Self {
         Self {
             jobs: Vec::new(),
-            cpu_num,
-            free_cpu_num: cpu_num,
+            cpu_count: cpu_num,
+            free_cpu_count: cpu_num,
         }
     }
 
@@ -74,24 +74,24 @@ impl Farm {
 
     fn render(&mut self) -> f32 {
         'mainloop: for job in self.jobs.iter_mut() {
-            for _ in 0..job.task_num {
-                if self.free_cpu_num == 0 {
+            for _ in 0..job.task_count {
+                if self.free_cpu_count == 0 {
                     break 'mainloop;
                 }
-                self.free_cpu_num -= 1;
+                self.free_cpu_count -= 1;
                 job.render();
-                if job.frame_num == 0 {
+                if job.frame_count == 0 {
                     break;
                 }
             }
         }
-        self.jobs.retain(|x| x.frame_num > 0);
+        self.jobs.retain(|x| x.frame_count > 0);
         let mut usage = 100f32;
-        let used = self.cpu_num - self.free_cpu_num;
-        if used != self.cpu_num {
-            usage = (used as f32 / self.cpu_num as f32) * 100f32;
+        let used = self.cpu_count - self.free_cpu_count;
+        if used != self.cpu_count {
+            usage = (used as f32 / self.cpu_count as f32) * 100f32;
         }
-        self.free_cpu_num = self.cpu_num;
+        self.free_cpu_count = self.cpu_count;
         usage
     }
 }
@@ -105,8 +105,8 @@ Writing default \"farmsimconf.json\" config file."
         let config = Self {
             repetitions: 1,
             max_render_cycles: 1600,
-            cpus: 1,
-            jobs: 1,
+            farm_cpus: 1,
+            initial_job_count: 1,
             min_frames_per_job: 1,
             max_frames_per_job: 1,
             min_frames_per_task: 1,
@@ -139,8 +139,8 @@ fn main() {
     let mut all_results: Vec<SimResult> = Vec::new();
 
     for _ in 0..config.repetitions {
-        let mut farm = Farm::new(config.cpus);
-        for _ in 0..config.jobs {
+        let mut farm = Farm::new(config.farm_cpus);
+        for _ in 0..config.initial_job_count {
             let init_data = generate_job_init_values(&config);
             let job = Job::new(init_data[0], init_data[1], init_data[2]);
             farm.submit(job);
@@ -161,7 +161,7 @@ fn process_results(all_results: Vec<SimResult>) {
 }
 
 fn run_sim(mut farm: Farm, max_cycles: u32) -> SimResult {
-    let total_frames = farm.jobs.iter().map(|x| x.frame_num).sum();
+    let total_frames = farm.jobs.iter().map(|x| x.frame_count).sum();
     let mut finished = false;
     let mut farm_usage: Vec<f32> = Vec::new();
     let mut last_cycle = 0_u32;
@@ -212,8 +212,8 @@ fn sim(config: &Config) {
     let y_diff = 25;
     root.draw(&Text::new(format!("repetitions: {}", config.repetitions), (text_x, text_y), ("Arial", 20).into_font())).unwrap();
     root.draw(&Text::new(format!("max_cycles: {}", config.max_render_cycles), (text_x, text_y + y_diff), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("cpus: {}", config.cpus), (text_x, text_y + (2 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("job_count: {}", config.jobs), (text_x, text_y + (3 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("cpus: {}", config.farm_cpus), (text_x, text_y + (2 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("job_count: {}", config.initial_job_count), (text_x, text_y + (3 * y_diff)), ("Arial", 20).into_font())).unwrap();
     root.draw(&Text::new(format!("frames: {} - {}", config.min_frames_per_job, config.max_frames_per_job), (text_x, text_y + (4 * y_diff)), ("Arial", 20).into_font())).unwrap();
     root.draw(&Text::new(format!("chunk_size: {} - {}", config.min_frames_per_task, config.max_frames_per_task), (text_x, text_y + (5 * y_diff)), ("Arial", 20).into_font())).unwrap();
     root.draw(&Text::new(format!("frame_cycles: {} - {}", config.min_render_cycles_per_frame, config.max_render_cycles_per_frame), (text_x, text_y + (6 * y_diff)), ("Arial", 20).into_font())).unwrap();
@@ -229,9 +229,9 @@ fn sim(config: &Config) {
 
     for rep in 0..config.repetitions {
         print!("rep: {}", rep);
-        let mut farm = Farm::new(config.cpus);
+        let mut farm = Farm::new(config.farm_cpus);
 
-        for _ in 0..config.jobs {
+        for _ in 0..config.initial_job_count {
             let mut frames = config.min_frames_per_job;
             if config.max_frames_per_job != frames {
                 frames = rng.gen_range(config.min_frames_per_job..=config.max_frames_per_job);
@@ -252,7 +252,7 @@ fn sim(config: &Config) {
 
         for _ in 0..=config.max_render_cycles {
             let usage = farm.render();
-            let done_p = config.jobs as f32 / farm.jobs.len() as f32;
+            let done_p = config.initial_job_count as f32 / farm.jobs.len() as f32;
             jobs_done.push(done_p);
             usage_seq.push(usage);
             if finished {
@@ -283,39 +283,39 @@ mod test {
     #[test]
     fn new_job_framge_count() {
         let job = Job::new(1, 1, 0);
-        assert_eq!(job.frame_num, 1);
+        assert_eq!(job.frame_count, 1);
         let job = Job::new(2, 1, 0);
-        assert_eq!(job.frame_num, 2);
+        assert_eq!(job.frame_count, 2);
         let job = Job::new(1, 100, 0);
-        assert_eq!(job.frame_num, 1);
+        assert_eq!(job.frame_count, 1);
         let job = Job::new(1, 1, 1);
-        assert_eq!(job.frame_num, 2);
+        assert_eq!(job.frame_count, 2);
         let job = Job::new(1, 1, 2);
-        assert_eq!(job.frame_num, 3);
+        assert_eq!(job.frame_count, 3);
         let job = Job::new(2, 1, 2);
-        assert_eq!(job.frame_num, 6);
+        assert_eq!(job.frame_count, 6);
         let job = Job::new(10, 1, 10);
-        assert_eq!(job.frame_num, 110);
+        assert_eq!(job.frame_count, 110);
         let job = Job::new(10, 2, 10);
-        assert_eq!(job.frame_num, 60);
+        assert_eq!(job.frame_count, 60);
         let job = Job::new(10, 5, 10);
-        assert_eq!(job.frame_num, 30);
+        assert_eq!(job.frame_count, 30);
         let job = Job::new(10, 10, 10);
-        assert_eq!(job.frame_num, 20);
+        assert_eq!(job.frame_count, 20);
     }
 
     #[test]
     fn job_render_takes_one_frame_until_zero() {
         let mut job = Job::new(2, 10, 0);
-        assert_eq!(job.frame_num, 2);
+        assert_eq!(job.frame_count, 2);
         job.render();
-        assert_eq!(job.frame_num, 1);
+        assert_eq!(job.frame_count, 1);
         job.render();
-        assert_eq!(job.frame_num, 0);
+        assert_eq!(job.frame_count, 0);
         job.render();
-        assert_eq!(job.frame_num, 0);
+        assert_eq!(job.frame_count, 0);
         job.render();
-        assert_eq!(job.frame_num, 0);
+        assert_eq!(job.frame_count, 0);
     }
 
     #[test]
@@ -429,8 +429,8 @@ mod test {
         let mut config = Config::new();
         config.repetitions = 1;
         config.max_render_cycles = 100;
-        config.cpus = 1;
-        config.jobs = 1;
+        config.farm_cpus = 1;
+        config.initial_job_count = 1;
         config.min_frames_per_job = 1;
         config.max_frames_per_job = 1;
         config.min_frames_per_task = 1;
@@ -440,8 +440,8 @@ mod test {
         config.min_task_startup_cycles = 0;
         config.max_task_startup_cycles = 0;
 
-        let mut farm = Farm::new(config.cpus);
-        for _ in 0..config.jobs {
+        let mut farm = Farm::new(config.farm_cpus);
+        for _ in 0..config.initial_job_count {
             let init_data = generate_job_init_values(&config);
             let job = Job::new(init_data[0], init_data[1], init_data[2]);
             farm.submit(job);
@@ -457,8 +457,8 @@ mod test {
         let mut config = Config::new();
         config.repetitions = 1;
         config.max_render_cycles = 1000;
-        config.cpus = 2;
-        config.jobs = 2;
+        config.farm_cpus = 2;
+        config.initial_job_count = 2;
         config.min_frames_per_job = 10;
         config.max_frames_per_job = 10;
         config.min_frames_per_task = 5;
@@ -468,8 +468,8 @@ mod test {
         config.min_task_startup_cycles = 2;
         config.max_task_startup_cycles = 2;
 
-        let mut farm = Farm::new(config.cpus);
-        for _ in 0..config.jobs {
+        let mut farm = Farm::new(config.farm_cpus);
+        for _ in 0..config.initial_job_count {
             let init_data = generate_job_init_values(&config);
             let job = Job::new(init_data[0], init_data[1], init_data[2]);
             farm.submit(job);
@@ -493,8 +493,8 @@ mod test {
         let job_values = generate_job_init_values(&config);
         assert_eq!(job_values, vec![1, 1, 0]);
         let job = Job::new(job_values[0], job_values[1], job_values[2]);
-        assert_eq!(job.frame_num, 1);
-        assert_eq!(job.task_num, 1);
+        assert_eq!(job.frame_count, 1);
+        assert_eq!(job.task_count, 1);
 
         let mut config = Config::new();
         config.min_frames_per_job = 10;
@@ -508,8 +508,8 @@ mod test {
         let job_values = generate_job_init_values(&config);
         assert_eq!(job_values, vec![10, 1, 0]);
         let job = Job::new(job_values[0], job_values[1], job_values[2]);
-        assert_eq!(job.frame_num, 10);
-        assert_eq!(job.task_num, 10);
+        assert_eq!(job.frame_count, 10);
+        assert_eq!(job.task_count, 10);
 
         let mut config = Config::new();
         config.min_frames_per_job = 10;
@@ -523,8 +523,8 @@ mod test {
         let job_values = generate_job_init_values(&config);
         assert_eq!(job_values, vec![30, 2, 0]);
         let job = Job::new(job_values[0], job_values[1], job_values[2]);
-        assert_eq!(job.frame_num, 30);
-        assert_eq!(job.task_num, 15);
+        assert_eq!(job.frame_count, 30);
+        assert_eq!(job.task_count, 15);
 
         let mut config = Config::new();
         config.min_frames_per_job = 10;
@@ -538,8 +538,8 @@ mod test {
         let job_values = generate_job_init_values(&config);
         assert_eq!(job_values, vec![30, 2, 0]);
         let job = Job::new(job_values[0], job_values[1], job_values[2]);
-        assert_eq!(job.frame_num, 30);
-        assert_eq!(job.task_num, 15);
+        assert_eq!(job.frame_count, 30);
+        assert_eq!(job.task_count, 15);
 
         let mut config = Config::new();
         config.min_frames_per_job = 10;
@@ -553,7 +553,7 @@ mod test {
         let job_values = generate_job_init_values(&config);
         assert_eq!(job_values, vec![30, 5, 3]);
         let job = Job::new(job_values[0], job_values[1], job_values[2]);
-        assert_eq!(job.frame_num, 48);
-        assert_eq!(job.task_num, 6);
+        assert_eq!(job.frame_count, 48);
+        assert_eq!(job.task_count, 6);
     }
 }
