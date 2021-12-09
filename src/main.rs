@@ -161,8 +161,13 @@ fn process_results(all_results: Vec<SimResult>, config: &Config) {
     let a = generate_plot_path();
     let root = BitMapBackend::new(&a, (PLOT_WIDTH, PLOT_HEIGTH))
         .into_drawing_area();
+    // root.draw_rect((50, 50), (200, 150), &RED, true);
     root.fill(&WHITE)
         .expect("can't fill the image.");
+    root.draw(&Rectangle::new(
+        [(40, 380), (400, 650)],
+        Into::<ShapeStyle>::into(&RED).filled(),
+    )).unwrap();
     let labels = vec![
         format!("{} {}", "repetitions:", config.repetitions),
         format!("{} {}", "max_render_cycles:", config.max_render_cycles),
