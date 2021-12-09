@@ -163,17 +163,39 @@ fn process_results(all_results: Vec<SimResult>, config: &Config) {
         .into_drawing_area();
     root.fill(&WHITE)
         .expect("can't fill the image.");
+    let labels = vec![
+        format!("{} {}", "repetitions:", config.repetitions),
+        format!("{} {}", "max_render_cycles:", config.max_render_cycles),
+        format!("{} {}", "farm_cpus:", config.farm_cpus),
+        format!("{} {}", "initial_job_count:", config.initial_job_count),
+        format!("{} {}", "min_frames_per_job:", config.min_frames_per_job),
+        format!("{} {}", "max_frames_per_job:", config.max_frames_per_job),
+        format!("{} {}", "min_frames_per_task:", config.min_frames_per_task),
+        format!("{} {}", "max_frames_per_task:", config.max_frames_per_task),
+        format!("{} {}", "min_render_cycles_per_frame:", config.min_render_cycles_per_frame),
+        format!("{} {}", "max_render_cycles_per_frame:", config.max_render_cycles_per_frame),
+        format!("{} {}", "min_task_startup_cycles:", config.min_task_startup_cycles),
+        format!("{} {}", "max_task_startup_cycles:", config.max_task_startup_cycles),
+
+
+
+    ];
+    let font = ("Arial", 20);
     let text_x = 50;
     let text_y = 400;
-    let y_diff = 25;
-    root.draw(&Text::new(format!("repetitions: {}", config.repetitions), (text_x, text_y), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("max_cycles: {}", config.max_render_cycles), (text_x, text_y + y_diff), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("cpus: {}", config.farm_cpus), (text_x, text_y + (2 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("job_count: {}", config.initial_job_count), (text_x, text_y + (3 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("frames: {} - {}", config.min_frames_per_job, config.max_frames_per_job), (text_x, text_y + (4 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("chunk_size: {} - {}", config.min_frames_per_task, config.max_frames_per_task), (text_x, text_y + (5 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("frame_cycles: {} - {}", config.min_render_cycles_per_frame, config.max_render_cycles_per_frame), (text_x, text_y + (6 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("min_startup_cycles: {} - {}", config.min_task_startup_cycles, config.max_task_startup_cycles), (text_x, text_y + (7 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    let y_diff = 20;
+    for (idx, label) in labels.into_iter().enumerate() {
+        root.draw(&Text::new(label, (text_x, text_y + (idx * y_diff) as i32), font.into_font())).unwrap();
+    }
+
+    // root.draw(&Text::new(format!("repetitions: {}", config.repetitions), (text_x, text_y), ("Arial", 20).into_font())).unwrap();
+    // root.draw(&Text::new(format!("max_cycles: {}", config.max_render_cycles), (text_x, text_y + y_diff), ("Arial", 20).into_font())).unwrap();
+    // root.draw(&Text::new(format!("cpus: {}", config.farm_cpus), (text_x, text_y + (2 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    // root.draw(&Text::new(format!("job_count: {}", config.initial_job_count), (text_x, text_y + (3 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    // root.draw(&Text::new(format!("frames: {} - {}", config.min_frames_per_job, config.max_frames_per_job), (text_x, text_y + (4 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    // root.draw(&Text::new(format!("chunk_size: {} - {}", config.min_frames_per_task, config.max_frames_per_task), (text_x, text_y + (5 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    // root.draw(&Text::new(format!("frame_cycles: {} - {}", config.min_render_cycles_per_frame, config.max_render_cycles_per_frame), (text_x, text_y + (6 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    // root.draw(&Text::new(format!("min_startup_cycles: {} - {}", config.min_task_startup_cycles, config.max_task_startup_cycles), (text_x, text_y + (7 * y_diff)), ("Arial", 20).into_font())).unwrap();
 
 }
 
