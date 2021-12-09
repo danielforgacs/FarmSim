@@ -176,9 +176,6 @@ fn process_results(all_results: Vec<SimResult>, config: &Config) {
         format!("{} {}", "max_render_cycles_per_frame:", config.max_render_cycles_per_frame),
         format!("{} {}", "min_task_startup_cycles:", config.min_task_startup_cycles),
         format!("{} {}", "max_task_startup_cycles:", config.max_task_startup_cycles),
-
-
-
     ];
     let font = ("Arial", 20);
     let text_x = 50;
