@@ -147,17 +147,38 @@ fn main() {
         }
         all_results.push(run_sim(farm, config.max_render_cycles));
     }
-    process_results(all_results);
-    sim(&config);
+    process_results(all_results, &config);
+    // sim(&config);
 }
 
-fn process_results(all_results: Vec<SimResult>) {
+fn process_results(all_results: Vec<SimResult>, config: &Config) {
     for result in all_results {
         println!("----------------------------------------");
         println!("total frames: {}", result.total_frames);
         println!("last cycle: {}", result.last_cycle);
         println!("usage: {:?}", result.farm_usage);
     }
+    let a = generate_plot_path();
+    let root = BitMapBackend::new(&a, (PLOT_WIDTH, PLOT_HEIGTH))
+        .into_drawing_area();
+    root.fill(&WHITE)
+        .expect("can't fill the image.");
+    let text_x = 50;
+    let text_y = 400;
+    let y_diff = 25;
+    root.draw(&Text::new(format!("repetitions: {}", config.repetitions), (text_x, text_y), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("max_cycles: {}", config.max_render_cycles), (text_x, text_y + y_diff), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("cpus: {}", config.farm_cpus), (text_x, text_y + (2 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("job_count: {}", config.initial_job_count), (text_x, text_y + (3 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("frames: {} - {}", config.min_frames_per_job, config.max_frames_per_job), (text_x, text_y + (4 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("chunk_size: {} - {}", config.min_frames_per_task, config.max_frames_per_task), (text_x, text_y + (5 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("frame_cycles: {} - {}", config.min_render_cycles_per_frame, config.max_render_cycles_per_frame), (text_x, text_y + (6 * y_diff)), ("Arial", 20).into_font())).unwrap();
+    root.draw(&Text::new(format!("min_startup_cycles: {} - {}", config.min_task_startup_cycles, config.max_task_startup_cycles), (text_x, text_y + (7 * y_diff)), ("Arial", 20).into_font())).unwrap();
+
+}
+
+fn generate_plot_path() -> String {
+    "farm_usage_plot.png".to_string()
 }
 
 fn run_sim(mut farm: Farm, max_cycles: u32) -> SimResult {
