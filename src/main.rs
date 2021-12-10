@@ -198,12 +198,14 @@ fn process_results(all_results: Vec<SimResult>, config: &Config) {
         root.draw(&Text::new(label, (text_x, text_y + (idx * y_diff) as i32), font.into_font())).unwrap();
     }
 
+    println!(":: plotting results.");
     for result in all_results {
         chart.draw_series(LineSeries::new((
             0..=result.farm_usage.len() - 1).map(|x| (x as f32, result.farm_usage[x] as f32)),
-        &BLACK,
+            &BLACK,
         )).expect("failed to draw chart");
     }
+    println!(":: ...finished plotting.");
 }
 
 fn generate_plot_path() -> String {
