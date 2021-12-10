@@ -2,7 +2,7 @@ use rand::prelude::*;
 use serde::{Serialize, Deserialize};
 use plotters::prelude::*;
 
-const PLOT_WIDTH: u32 = 1600;
+const PLOT_WIDTH: u32 = 1800;
 const PLOT_HEIGTH: u32 = 900;
 
 struct Job {
