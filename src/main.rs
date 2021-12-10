@@ -177,8 +177,8 @@ fn process_results(all_results: Vec<SimResult>, config: &Config) {
             result.last_cycle,
         );
     }
-    let a = generate_plot_path();
-    let root = BitMapBackend::new(&a, (PLOT_WIDTH, PLOT_HEIGTH))
+    let file_name= generate_plot_path();
+    let root = BitMapBackend::new(&file_name, (PLOT_WIDTH, PLOT_HEIGTH))
         .into_drawing_area();
     root.fill(&WHITE)
         .expect("can't fill the image.");
@@ -230,7 +230,17 @@ fn process_results(all_results: Vec<SimResult>, config: &Config) {
 }
 
 fn generate_plot_path() -> String {
-    "farm_usage_plot.png".to_string()
+    let mut version = 1_u8;
+    let mut file_name = format!("farm_usage_plot.{:04}.png", version);
+    while std::path::Path::new(&file_name).is_file() {
+        version += 1;
+        if version > 25 {
+            panic!("Too many saved plots. Clean up!")
+        }
+        file_name = format!("farm_usage_plot.{:04}.png", version);
+    };
+    println!(":: Plot file name: {}", &file_name);
+    file_name
 }
 
 fn run_sim(mut farm: Farm, max_cycles: u32) -> SimResult {
