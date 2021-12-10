@@ -200,8 +200,8 @@ fn process_results(all_results: Vec<SimResult>, config: &Config) {
 
     println!(":: plotting results.");
     for result in all_results {
-        chart.draw_series(LineSeries::new((
-            0..=result.farm_usage.len() - 1).map(|x| (x as f32, result.farm_usage[x] as f32)),
+        chart.draw_series(LineSeries::new(
+            (0..=result.farm_usage.len() - 1).map(|x| (x as f32, result.farm_usage[x] as f32)),
             &BLACK,
         )).expect("failed to draw chart");
     }
