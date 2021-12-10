@@ -152,11 +152,10 @@ fn main() {
 }
 
 fn process_results(all_results: Vec<SimResult>, config: &Config) {
-    for result in all_results {
+    for result in &all_results {
         println!("----------------------------------------");
         println!("total frames: {}", result.total_frames);
         println!("last cycle: {}", result.last_cycle);
-        println!("usage: {:?}", result.farm_usage);
     }
     let a = generate_plot_path();
     let root = BitMapBackend::new(&a, (PLOT_WIDTH, PLOT_HEIGTH))
@@ -194,6 +193,13 @@ fn process_results(all_results: Vec<SimResult>, config: &Config) {
     let y_diff = 20;
     for (idx, label) in labels.into_iter().enumerate() {
         root.draw(&Text::new(label, (text_x, text_y + (idx * y_diff) as i32), font.into_font())).unwrap();
+    }
+
+    for result in all_results {
+        chart.draw_series(LineSeries::new((
+            0..=result.farm_usage.len() - 1).map(|x| (x as f32, result.farm_usage[x] as f32)),
+        &BLACK,
+        )).expect("failed to draw chart");
     }
 }
 
@@ -242,79 +248,79 @@ fn generate_job_init_values(config: &Config) -> Vec<u32> {
     vec![frames, task_frames, startup_cycles]
 }
 
-fn sim(config: &Config) {
-    let mut rng = thread_rng();
-    let root = BitMapBackend::new("farm_usage_plot.png", (PLOT_WIDTH, PLOT_HEIGTH))
-        .into_drawing_area();
-    root.fill(&WHITE)
-        .expect("can't fill the image.");
-    let text_x = 50;
-    let text_y = 400;
-    let y_diff = 25;
-    root.draw(&Text::new(format!("repetitions: {}", config.repetitions), (text_x, text_y), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("max_cycles: {}", config.max_render_cycles), (text_x, text_y + y_diff), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("cpus: {}", config.farm_cpus), (text_x, text_y + (2 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("job_count: {}", config.initial_job_count), (text_x, text_y + (3 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("frames: {} - {}", config.min_frames_per_job, config.max_frames_per_job), (text_x, text_y + (4 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("chunk_size: {} - {}", config.min_frames_per_task, config.max_frames_per_task), (text_x, text_y + (5 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("frame_cycles: {} - {}", config.min_render_cycles_per_frame, config.max_render_cycles_per_frame), (text_x, text_y + (6 * y_diff)), ("Arial", 20).into_font())).unwrap();
-    root.draw(&Text::new(format!("min_startup_cycles: {} - {}", config.min_task_startup_cycles, config.max_task_startup_cycles), (text_x, text_y + (7 * y_diff)), ("Arial", 20).into_font())).unwrap();
-
-    let mut chart = ChartBuilder::on(&root)
-        .margin(5)
-        .x_label_area_size(30)
-        .y_label_area_size(30)
-        .build_cartesian_2d(0_f32..config.max_render_cycles as f32, 0_f32..100_f32).expect("chart build failed.");
-    chart.configure_mesh()
-        .draw().expect("chart draw failed.");
-
-    for rep in 0..config.repetitions {
-        print!("rep: {}", rep);
-        let mut farm = Farm::new(config.farm_cpus);
-
-        for _ in 0..config.initial_job_count {
-            let mut frames = config.min_frames_per_job;
-            if config.max_frames_per_job != frames {
-                frames = rng.gen_range(config.min_frames_per_job..=config.max_frames_per_job);
-            }
-            frames *= rng.gen_range(config.min_render_cycles_per_frame..=config.max_render_cycles_per_frame);
-            let mut chunk_size = config.min_frames_per_task;
-            if config.min_frames_per_task < config.max_frames_per_task {
-                chunk_size = rng.gen_range(config.min_frames_per_task..=config.max_frames_per_task);
-            }
-            let startup_cycles = rng.gen_range(config.min_task_startup_cycles..=config.max_task_startup_cycles);
-            let job = Job::new(frames, chunk_size, startup_cycles);
-            farm.submit(job);
-        }
-
-        let mut usage_seq: Vec<f32> = Vec::new();
-        let mut jobs_done: Vec<f32> = Vec::new();
-        let mut finished = false;
-
-        for _ in 0..=config.max_render_cycles {
-            let usage = farm.render();
-            let done_p = config.initial_job_count as f32 / farm.jobs.len() as f32;
-            jobs_done.push(done_p);
-            usage_seq.push(usage);
-            if finished {
-                break;
-            }
-            if farm.jobs.is_empty() {
-                finished = true;
-            }
-        }
-        print!(" - done. rendering...");
-        chart.draw_series(LineSeries::new((
-            0..=usage_seq.len() - 1).map(|x| (x as f32, usage_seq[x] as f32)),
-        &BLACK,
-        )).expect("failed to draw chart");
-        chart.draw_series(LineSeries::new((
-            0..=usage_seq.len() - 1).map(|x| (x as f32, jobs_done[x] as f32)),
-        &GREEN,
-        )).expect("failed to draw chart");
-        println!(" - done.");
-    }
-}
+// fn sim(config: &Config) {
+//     let mut rng = thread_rng();
+//     let root = BitMapBackend::new("farm_usage_plot.png", (PLOT_WIDTH, PLOT_HEIGTH))
+//         .into_drawing_area();
+//     root.fill(&WHITE)
+//         .expect("can't fill the image.");
+//     let text_x = 50;
+//     let text_y = 400;
+//     let y_diff = 25;
+//     root.draw(&Text::new(format!("repetitions: {}", config.repetitions), (text_x, text_y), ("Arial", 20).into_font())).unwrap();
+//     root.draw(&Text::new(format!("max_cycles: {}", config.max_render_cycles), (text_x, text_y + y_diff), ("Arial", 20).into_font())).unwrap();
+//     root.draw(&Text::new(format!("cpus: {}", config.farm_cpus), (text_x, text_y + (2 * y_diff)), ("Arial", 20).into_font())).unwrap();
+//     root.draw(&Text::new(format!("job_count: {}", config.initial_job_count), (text_x, text_y + (3 * y_diff)), ("Arial", 20).into_font())).unwrap();
+//     root.draw(&Text::new(format!("frames: {} - {}", config.min_frames_per_job, config.max_frames_per_job), (text_x, text_y + (4 * y_diff)), ("Arial", 20).into_font())).unwrap();
+//     root.draw(&Text::new(format!("chunk_size: {} - {}", config.min_frames_per_task, config.max_frames_per_task), (text_x, text_y + (5 * y_diff)), ("Arial", 20).into_font())).unwrap();
+//     root.draw(&Text::new(format!("frame_cycles: {} - {}", config.min_render_cycles_per_frame, config.max_render_cycles_per_frame), (text_x, text_y + (6 * y_diff)), ("Arial", 20).into_font())).unwrap();
+//     root.draw(&Text::new(format!("min_startup_cycles: {} - {}", config.min_task_startup_cycles, config.max_task_startup_cycles), (text_x, text_y + (7 * y_diff)), ("Arial", 20).into_font())).unwrap();
+//
+//     let mut chart = ChartBuilder::on(&root)
+//         .margin(5)
+//         .x_label_area_size(30)
+//         .y_label_area_size(30)
+//         .build_cartesian_2d(0_f32..config.max_render_cycles as f32, 0_f32..100_f32).expect("chart build failed.");
+//     chart.configure_mesh()
+//         .draw().expect("chart draw failed.");
+//
+//     for rep in 0..config.repetitions {
+//         print!("rep: {}", rep);
+//         let mut farm = Farm::new(config.farm_cpus);
+//
+//         for _ in 0..config.initial_job_count {
+//             let mut frames = config.min_frames_per_job;
+//             if config.max_frames_per_job != frames {
+//                 frames = rng.gen_range(config.min_frames_per_job..=config.max_frames_per_job);
+//             }
+//             frames *= rng.gen_range(config.min_render_cycles_per_frame..=config.max_render_cycles_per_frame);
+//             let mut chunk_size = config.min_frames_per_task;
+//             if config.min_frames_per_task < config.max_frames_per_task {
+//                 chunk_size = rng.gen_range(config.min_frames_per_task..=config.max_frames_per_task);
+//             }
+//             let startup_cycles = rng.gen_range(config.min_task_startup_cycles..=config.max_task_startup_cycles);
+//             let job = Job::new(frames, chunk_size, startup_cycles);
+//             farm.submit(job);
+//         }
+//
+//         let mut usage_seq: Vec<f32> = Vec::new();
+//         let mut jobs_done: Vec<f32> = Vec::new();
+//         let mut finished = false;
+//
+//         for _ in 0..=config.max_render_cycles {
+//             let usage = farm.render();
+//             let done_p = config.initial_job_count as f32 / farm.jobs.len() as f32;
+//             jobs_done.push(done_p);
+//             usage_seq.push(usage);
+//             if finished {
+//                 break;
+//             }
+//             if farm.jobs.is_empty() {
+//                 finished = true;
+//             }
+//         }
+//         print!(" - done. rendering...");
+//         chart.draw_series(LineSeries::new((
+//             0..=usage_seq.len() - 1).map(|x| (x as f32, usage_seq[x] as f32)),
+//         &BLACK,
+//         )).expect("failed to draw chart");
+//         chart.draw_series(LineSeries::new((
+//             0..=usage_seq.len() - 1).map(|x| (x as f32, jobs_done[x] as f32)),
+//         &GREEN,
+//         )).expect("failed to draw chart");
+//         println!(" - done.");
+//     }
+// }
 
 
 #[cfg(test)]
