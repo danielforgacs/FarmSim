@@ -138,6 +138,8 @@ fn main() {
 
     let mut all_results: Vec<SimResult> = Vec::new();
 
+    println!(":: starting sims");
+
     for _ in 0..config.repetitions {
         let mut farm = Farm::new(config.farm_cpus);
         for _ in 0..config.initial_job_count {
@@ -147,14 +149,16 @@ fn main() {
         }
         all_results.push(run_sim(farm, config.max_render_cycles));
     }
+    println!(":: ...finished");
     process_results(all_results, &config);
 }
 
 fn process_results(all_results: Vec<SimResult>, config: &Config) {
-    for result in &all_results {
-        println!("----------------------------------------");
-        println!("total frames: {}", result.total_frames);
-        println!("last cycle: {}", result.last_cycle);
+    println!(":: processing results.");
+    for (index, result) in all_results.iter().enumerate() {
+        println!(":: cycle: {}  ----------------------------------------", index);
+        println!("    total frames: {}", result.total_frames);
+        println!("    last active cycle: {}", result.last_cycle);
     }
     let a = generate_plot_path();
     let root = BitMapBackend::new(&a, (PLOT_WIDTH, PLOT_HEIGTH))
