@@ -32,8 +32,14 @@ struct Config {
     max_task_startup_cycles: u32,
 }
 
+struct FarmCycleResult {
+    usage: f32,
+    finished_jobs: f32,
+}
+
 struct SimResult {
     farm_usage: Vec<f32>,
+    finished_jobs: Vec<f32>,
     last_cycle: u32,
     total_frames: u32,
 }
@@ -72,7 +78,7 @@ impl Farm {
         self.jobs.push(job);
     }
 
-    fn render(&mut self) -> f32 {
+    fn render(&mut self) -> FarmCycleResult {
         'mainloop: for job in self.jobs.iter_mut() {
             for _ in 0..job.task_count {
                 if self.free_cpu_count == 0 {
@@ -92,7 +98,8 @@ impl Farm {
             usage = (used as f32 / self.cpu_count as f32) * 100f32;
         }
         self.free_cpu_count = self.cpu_count;
-        usage
+        let finished_jobs = ((1000_f32 - self.jobs.len() as f32) / 1000_f32) * 100_f32;
+        FarmCycleResult::new(usage, finished_jobs)
     }
 }
 
@@ -122,6 +129,14 @@ Writing default \"farmsimconf.json\" config file."
     }
 }
 
+impl FarmCycleResult {
+    fn new(usage: f32, finished: f32) -> Self {
+        Self {
+            usage,
+            finished_jobs: finished,
+        }
+    }
+}
 fn main() {
     let config: Config = match std::fs::read_to_string("farmsimconf.json") {
         Ok(jsontext) => match serde_json::from_str(&jsontext) {
@@ -156,9 +171,11 @@ fn main() {
 fn process_results(all_results: Vec<SimResult>, config: &Config) {
     println!(":: processing results.");
     for (index, result) in all_results.iter().enumerate() {
-        println!(":: cycle: {}  ----------------------------------------", index);
-        println!("    total frames: {}", result.total_frames);
-        println!("    last active cycle: {}", result.last_cycle);
+        println!(":: repetition: {}  ----------------------------------------", index);
+        println!("    total frames: {}, last active cycle: {}",
+            result.total_frames,
+            result.last_cycle,
+        );
     }
     let a = generate_plot_path();
     let root = BitMapBackend::new(&a, (PLOT_WIDTH, PLOT_HEIGTH))
@@ -204,6 +221,10 @@ fn process_results(all_results: Vec<SimResult>, config: &Config) {
             (0..=result.farm_usage.len() - 1).map(|x| (x as f32, result.farm_usage[x] as f32)),
             &BLACK,
         )).expect("failed to draw chart");
+        chart.draw_series(LineSeries::new(
+            (0..=result.farm_usage.len() - 1).map(|x| (x as f32, result.finished_jobs[x] as f32)),
+            &GREEN,
+        )).expect("failed to draw chart");
     }
     println!(":: ...finished plotting.");
 }
@@ -216,9 +237,12 @@ fn run_sim(mut farm: Farm, max_cycles: u32) -> SimResult {
     let total_frames = farm.jobs.iter().map(|x| x.frame_count).sum();
     let mut finished = false;
     let mut farm_usage: Vec<f32> = Vec::new();
+    let mut finished_jobs: Vec<f32> = Vec::new();
     let mut last_cycle = 0_u32;
     for cycle in 0..max_cycles {
-        farm_usage.push(farm.render());
+        let result = farm.render();
+        farm_usage.push(result.usage);
+        finished_jobs.push(result.finished_jobs);
         if finished {
             last_cycle = cycle;
             break;
@@ -231,6 +255,7 @@ fn run_sim(mut farm: Farm, max_cycles: u32) -> SimResult {
         farm_usage,
         last_cycle,
         total_frames,
+        finished_jobs,
     }
 }
 
