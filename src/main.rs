@@ -163,10 +163,17 @@ fn process_results(all_results: Vec<SimResult>, config: &Config) {
         .into_drawing_area();
     root.fill(&WHITE)
         .expect("can't fill the image.");
+        let mut chart = ChartBuilder::on(&root)
+        .margin(5)
+        .x_label_area_size(30)
+        .y_label_area_size(30)
+        .build_cartesian_2d(0_f32..config.max_render_cycles as f32, 0_f32..100_f32).expect("chart build failed.");
+    chart.configure_mesh()
+        .draw().expect("chart draw failed.");
     root.draw(&Rectangle::new(
         [(40, 380), (400, 650)],
-        Into::<ShapeStyle>::into(&RGBColor(235, 230, 228)).filled(),
-    )).unwrap();
+        Into::<ShapeStyle>::into(&RGBColor(235, 230, 228)).filled(),))
+        .unwrap();
     let labels = vec![
         format!("{} {}", "repetitions:", config.repetitions),
         format!("{} {}", "max_render_cycles:", config.max_render_cycles),
