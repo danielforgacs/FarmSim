@@ -110,18 +110,18 @@ impl Config {
 Writing default \"farmsimconf.json\" config file."
         );
         let config = Self {
-            repetitions: 1,
-            max_render_cycles: 1600,
-            farm_cpus: 1,
-            initial_job_count: 1,
+            repetitions: 100,
+            max_render_cycles: 10000,
+            farm_cpus: 250,
+            initial_job_count: 100,
             min_frames_per_job: 1,
-            max_frames_per_job: 1,
+            max_frames_per_job: 1000,
             min_frames_per_task: 1,
-            max_frames_per_task: 1,
+            max_frames_per_task: 10,
             min_render_cycles_per_frame: 1,
             max_render_cycles_per_frame: 1,
-            min_task_startup_cycles: 0,
-            max_task_startup_cycles: 0,
+            min_task_startup_cycles: 1,
+            max_task_startup_cycles: 10,
         };
         let json: String = serde_json::to_string(&config).expect("Can't serialize default config.");
         std::fs::write("farmsimconf.json", json).expect("Can't write default json config.");
