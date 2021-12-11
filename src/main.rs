@@ -13,6 +13,7 @@ struct Job {
 struct Farm {
     jobs: Vec<Job>,
     cpu_count: u32,
+    init_job_count: u32,
     free_cpu_count: u32,
 }
 
@@ -70,6 +71,7 @@ impl Farm {
         Self {
             jobs: Vec::new(),
             cpu_count: cpu_num,
+            init_job_count: 0,
             free_cpu_count: cpu_num,
         }
     }
@@ -98,7 +100,9 @@ impl Farm {
             usage = (used as f32 / self.cpu_count as f32) * 100f32;
         }
         self.free_cpu_count = self.cpu_count;
-        let finished_jobs = ((1000_f32 - self.jobs.len() as f32) / 1000_f32) * 100_f32;
+        let init_job_count = self.init_job_count as f32;
+        let done_job_count = init_job_count - self.jobs.len() as f32;
+        let finished_jobs = (done_job_count / init_job_count) * 100f32;
         FarmCycleResult::new(usage, finished_jobs)
     }
 }
@@ -162,6 +166,7 @@ fn main() {
             let job = Job::new(init_data[0], init_data[1], init_data[2]);
             farm.submit(job);
         }
+        farm.init_job_count = farm.jobs.len() as u32;
         all_results.push(run_sim(farm, config.max_render_cycles));
     }
     println!(":: ...finished");
