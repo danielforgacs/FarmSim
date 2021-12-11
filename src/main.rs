@@ -206,10 +206,10 @@ fn process_results(all_results: Vec<SimResult>, config: &Config, file_name: &Str
         format!("{} {}", "initial_job_count:", config.initial_job_count),
         format!("{} {}", "min_frames_per_job:", config.min_frames_per_job),
         format!("{} {}", "max_frames_per_job:", config.max_frames_per_job),
-        format!("{} {}", "min_frames_per_task:", config.min_frames_per_task),
-        format!("{} {}", "max_frames_per_task:", config.max_frames_per_task),
         format!("{} {}", "min_render_cycles_per_frame:", config.min_render_cycles_per_frame),
         format!("{} {}", "max_render_cycles_per_frame:", config.max_render_cycles_per_frame),
+        format!("{} {}", "min_frames_per_task:", config.min_frames_per_task),
+        format!("{} {}", "max_frames_per_task:", config.max_frames_per_task),
         format!("{} {}", "min_task_startup_cycles:", config.min_task_startup_cycles),
         format!("{} {}", "max_task_startup_cycles:", config.max_task_startup_cycles),
     ];

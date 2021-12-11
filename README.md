@@ -31,17 +31,37 @@ On the first use the app will save the default config file in the current direct
 
 **1st run:**
 
-![default config](/example_renders/farm_usage_plot_01.png?raw=true "default config")
+![default config](/example_renders/farm_usage_plot.0001.png?raw=true "default config")
 
-### tweak the config, save the file, analyse the results:
+### now tweak the config & analyse the results
 
-The next few sims show 10 sims of 1600 cycles. The config is 500 cpus, 100 randomised jobs submitted. According to the results after only tweaking the chunk size, starting with 500 cpus finishing on average after ~1000 cycles you can save 300 cpus and finish on average after ~900 cycles.*
+After the defaults that's a bit too artifical, let's have a more realistic configuration:
 
-![default config](/example_renders/farm_usage_plot_02.png?raw=true "default config")
-![default config](/example_renders/farm_usage_plot_03.png?raw=true "default config")
-![default config](/example_renders/farm_usage_plot_04.png?raw=true "default config")
-![default config](/example_renders/farm_usage_plot_05.png?raw=true "default config")
+Let's say you have a `farm with 1000 CPUs`. If you `submit 1000 scenes` that take `1-25` time units, aka. `cycles to open`, are `1 - 250 frames long`, with `frames that take 1 - 25 cycles to render` with `tasks that are 1 frame` long, then your farm finishes in 23,000 cycles on average and looks like this:
 
+![sim plot](/example_renders/farm_usage_plot.0002.png?raw=true "sim plot")
+
+Now start tweaking. The **most important** parameter seems to be **task size**. The deal with task size is, that that's the parm that controls how many times you force the farm to spend time on just opening scenes.
+
+![sim plot](/example_renders/farm_usage_plot.0003.png?raw=true "sim plot")
+
+If the only parameter I change is that I let CPUs render 2 frames of a job instead of just one, the same farm with the same jobs finishes in just about 10,000 cycles earlier on average.
+
+Now you can tweak farm parameters, run the sim with the same job settings and see what's best for you.
+
+**The most important takeaway probably is**, that a task size of 1 feels like the fastest way to get renders, but then a 60 frames scene that takes a minute to open spends 59 minutes extra farm time just being reopened on different machines. This works when there's only one job, but when new jobs keep coming the new ones will have to wait much longer to be started in the first place.
+
+And then experiment...
+
+![sim plot](/example_renders/farm_usage_plot.0004.png?raw=true "sim plot")
+
+and then at this point 100 CPUs are enough to finish with the same jobs in the same time.
+
+![sim plot](/example_renders/farm_usage_plot.0005.png?raw=true "sim plot")
+
+Other configurations also make sense. If you keep the CPU count, the jobs finish earlier. You can tweak it to keep like 5% of the farm finish fast so new artists can have their first few frames to check faster. And so on...
+
+![sim plot](/example_renders/farm_usage_plot.0006.png?raw=true "sim plot")
 
 ### Config
 
