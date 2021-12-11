@@ -232,10 +232,27 @@ fn process_results(all_results: Vec<SimResult>, config: &Config, file_name: &Str
 
 fn generate_plot_path() -> String {
     let mut version = 1_u8;
+    let dir = std::env::current_dir().expect("Can't read current dir.");
+    for entry in dir.read_dir().expect("read dir error.") {
+        if let Ok(entry) = entry {
+            let candidate = entry.path().to_str().unwrap().to_string();
+            if candidate.contains("farm_usage_plot") {
+                let digits = candidate
+                    .split(".")
+                    .nth(1)
+                    .expect("Can't extract version digits.")
+                    .to_string()
+                    .parse::<u8>().expect(&format!("{}", candidate));
+                if digits > version {
+                    version = digits;
+                }
+            }
+        }
+    }
     let mut file_name = format!("farm_usage_plot.{:04}.png", version);
     while std::path::Path::new(&file_name).is_file() {
         version += 1;
-        if version > 25 {
+        if version > 100 {
             panic!("Too many saved plots. Clean up!")
         }
         file_name = format!("farm_usage_plot.{:04}.png", version);
