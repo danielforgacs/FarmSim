@@ -117,9 +117,9 @@ Writing default \"farmsimconf.json\" config file."
             min_frames_per_job: 1,
             max_frames_per_job: 1000,
             min_frames_per_task: 1,
-            max_frames_per_task: 10,
+            max_frames_per_task: 1,
             min_render_cycles_per_frame: 1,
-            max_render_cycles_per_frame: 1,
+            max_render_cycles_per_frame: 10,
             min_task_startup_cycles: 1,
             max_task_startup_cycles: 10,
         };
