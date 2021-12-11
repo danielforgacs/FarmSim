@@ -188,7 +188,7 @@ fn process_results(all_results: Vec<SimResult>, config: &Config, file_name: &Str
         .into_drawing_area();
     root.fill(&WHITE)
         .expect("can't fill the image.");
-        let mut chart = ChartBuilder::on(&root)
+    let mut chart = ChartBuilder::on(&root)
         .margin(5)
         .x_label_area_size(30)
         .y_label_area_size(30)
