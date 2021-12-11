@@ -353,10 +353,10 @@ mod test {
         let job = Job::new(1, 1000, 0);
         let mut farm = Farm::new(1);
         farm.submit(job);
-        let usage = farm.render();
-        assert_eq!(usage, 100.0);
-        let usage = farm.render();
-        assert_eq!(usage, 0f32);
+        let result = farm.render();
+        assert_eq!(result.usage, 100.0);
+        let result = farm.render();
+        assert_eq!(result.usage, 0f32);
     }
 
     #[test]
@@ -364,14 +364,14 @@ mod test {
         let job = Job::new(3, 1000, 0);
         let mut farm = Farm::new(1);
         farm.submit(job);
-        let usage = farm.render();
-        assert_eq!(usage, 100.0);
-        let usage = farm.render();
-        assert_eq!(usage, 100.0);
-        let usage = farm.render();
-        assert_eq!(usage, 100.0);
-        let usage = farm.render();
-        assert_eq!(usage, 0f32);
+        let result = farm.render();
+        assert_eq!(result.usage, 100.0);
+        let result = farm.render();
+        assert_eq!(result.usage, 100.0);
+        let result = farm.render();
+        assert_eq!(result.usage, 100.0);
+        let result = farm.render();
+        assert_eq!(result.usage, 0f32);
     }
 
     #[test]
@@ -379,12 +379,12 @@ mod test {
         let job = Job::new(2, 1000, 0);
         let mut farm = Farm::new(2);
         farm.submit(job);
-        let usage = farm.render();
-        assert_eq!(usage, 50.0);
-        let usage = farm.render();
-        assert_eq!(usage, 50.0);
-        let usage = farm.render();
-        assert_eq!(usage, 0f32);
+        let result = farm.render();
+        assert_eq!(result.usage, 50.0);
+        let result = farm.render();
+        assert_eq!(result.usage, 50.0);
+        let result = farm.render();
+        assert_eq!(result.usage, 0f32);
     }
 
     #[test]
@@ -394,12 +394,12 @@ mod test {
         farm.submit(job);
 
         for _ in 0..4 {
-            let usage = farm.render();
-            assert_eq!(usage, 25.0);
+            let result = farm.render();
+            assert_eq!(result.usage, 25.0);
         }
 
-        let usage = farm.render();
-        assert_eq!(usage, 0f32);
+        let result = farm.render();
+        assert_eq!(result.usage, 0f32);
     }
 
     #[test]
@@ -409,12 +409,12 @@ mod test {
         farm.submit(job);
 
         for _ in 0..10 {
-            let usage = farm.render();
-            assert_eq!(usage, 10.0);
+            let result = farm.render();
+            assert_eq!(result.usage, 10.0);
         }
 
-        let usage = farm.render();
-        assert_eq!(usage, 0f32);
+        let result = farm.render();
+        assert_eq!(result.usage, 0f32);
     }
 
     #[test]
@@ -424,34 +424,12 @@ mod test {
         farm.submit(job);
 
         for _ in 0..2 {
-            let usage = farm.render();
-            assert_eq!(usage, 50.0);
+            let result = farm.render();
+            assert_eq!(result.usage, 50.0);
         }
 
-        let usage = farm.render();
-        assert_eq!(usage, 0f32);
-    }
-
-    use std::collections::HashMap;
-    #[test]
-    fn farm_render_test_07() {
-        // let test_cases: Vec<HashMap<str, u32>>
-
-
-//         let test_cases = [
-//             1, 1000, 0,
-//         ]
-//         let job = Job::new(10, 2, 0);
-//         let mut farm = Farm::new(10);
-//         farm.submit(job);
-//
-//         for _ in 0..2 {
-//             let usage = farm.render();
-//             assert_eq!(usage, 50.0);
-//         }
-//
-//         let usage = farm.render();
-//         assert_eq!(usage, 0f32);
+        let result = farm.render();
+        assert_eq!(result.usage, 0f32);
     }
 
     #[test]
