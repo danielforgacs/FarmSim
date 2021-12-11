@@ -165,10 +165,12 @@ fn main() {
         all_results.push(run_sim(farm, config.max_render_cycles));
     }
     println!(":: ...finished");
-    process_results(all_results, &config);
+    let file_name= generate_plot_path();
+    process_results(all_results, &config, &file_name);
+    println!(":: Saved plot file name: {}", &file_name);
 }
 
-fn process_results(all_results: Vec<SimResult>, config: &Config) {
+fn process_results(all_results: Vec<SimResult>, config: &Config, file_name: &String) {
     println!(":: processing results.");
     for (index, result) in all_results.iter().enumerate() {
         println!(":: repetition: {}  ----------------------------------------", index);
@@ -177,7 +179,6 @@ fn process_results(all_results: Vec<SimResult>, config: &Config) {
             result.last_cycle,
         );
     }
-    let file_name= generate_plot_path();
     let root = BitMapBackend::new(&file_name, (PLOT_WIDTH, PLOT_HEIGTH))
         .into_drawing_area();
     root.fill(&WHITE)
@@ -239,7 +240,6 @@ fn generate_plot_path() -> String {
         }
         file_name = format!("farm_usage_plot.{:04}.png", version);
     };
-    println!(":: Plot file name: {}", &file_name);
     file_name
 }
 
